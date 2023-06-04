@@ -19,17 +19,18 @@
  * );
  */
 export default (mappping) => ({
-  /**
-   * @param {import('lightningcss').Url} url - The url object to transform
-   * @returns {import('lightningcss').Url} - The transformed url object
-   */
-  Url(url) {
-    for (const [key, value] of Object.entries(mappping)) {
-      const replacementKey = `\${${key}}`;
-      if (url.url.includes(replacementKey)) {
-        url.url = url.url.replace(replacementKey, value);
-      }
-    }
-    return url;
-  },
+	/**
+	 * @param {import('lightningcss').Url} url - The url object to transform
+	 * @returns {import('lightningcss').Url} - The transformed url object
+	 */
+	Url(url) {
+		for (const [key, value] of Object.entries(mappping)) {
+			const replacementKey = `\${${key}}`;
+			if (url.url.includes(replacementKey)) {
+				url.url = url.url.replace(replacementKey, value);
+			}
+		}
+
+		return url;
+	},
 });
