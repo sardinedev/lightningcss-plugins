@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/sardinedev/lightningcss-plugins#readme",
   "scripts": {
-    "test": "node --test src/*.test.mjs"
+    "test": "node --test src/*.test.mjs",
+    "lint": "npx rome check ./src",
+    "format": "npx rome format ./src"
   }
 }

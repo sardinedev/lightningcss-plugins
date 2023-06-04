@@ -1,5 +1,3 @@
-// @ts-check
-
 /**
  * @typedef {Object.<string, string>} mappping - A case sensitive key value pair
  */
