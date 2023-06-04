@@ -28,8 +28,8 @@ export default (mappping) => ({
       const replacementKey = `\${${key}}`;
       if (url.url.includes(replacementKey)) {
         url.url = url.url.replace(replacementKey, value);
-        return url;
       }
     }
+    return url;
   },
 });
