@@ -1,17 +1,11 @@
 {
-  "name": "@sardine/lightningcss-plugin-string-replacement",
+  "name": "@sardine/lightningcss-plugin-url-composer",
   "version": "1.0.0",
-  "description": "A Lightning CSS plugin to replace strings in the CSS",
-  "source": "lib/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "directories": {
-    "lib": "lib",
-    "test": "__tests__"
-  },
+  "description": "A Lightning CSS plugin to compose strings in the CSS",
+  "source": "src/urlComposer.mjs",
+  "module": "src/urlComposer.mjs",
   "files": [
-    "dist"
+    "src"
   ],
   "publishConfig": {
     "access": "public"
@@ -27,8 +21,6 @@
   },
   "homepage": "https://github.com/sardinedev/lightningcss-plugins#readme",
   "scripts": {
-    "build": "parcel build",
-    "test": "jest --coverage",
-    "types": "npx tsc --noEmit"
+    "test": "node --test src/*.test.mjs"
   }
 }
