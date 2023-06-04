@@ -7,10 +7,11 @@
     "./packages/*"
   ],
   "scripts": {
-    "test": "npx turbo run test",
-    "lint": "npx turbo run lint",
     "format": "npx turbo run format",
-    "prepare": "husky install"
+    "lint": "npx turbo run lint",
+    "prepare": "husky install",
+    "release": "turbo run release",
+    "test": "npx turbo run test"
   },
   "license": "MIT",
   "devDependencies": {

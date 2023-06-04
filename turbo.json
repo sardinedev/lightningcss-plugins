@@ -8,7 +8,7 @@
                 "src/**/*.mjs"
             ]
         },
-        "deploy": {
+        "release": {
             "dependsOn": [
                 "format",
                 "test",
