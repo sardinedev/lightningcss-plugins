@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -27,13 +31,17 @@ jobs:
           registry-url: "https://registry.npmjs.org"
           scope: "@sardine"
 
-      - name: "Setup npm"
+      - name: Setup npm
         run: npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
 
       - name: Install Dependencies
         run: npm ci
 
-      - name: Publish to npm
+      - name: Run release script
+        run: npm run release
+
+      - name: Publish to NPM
+        if: github.ref_name == 'main'
         id: changesets
         uses: changesets/action@v1
         with:
