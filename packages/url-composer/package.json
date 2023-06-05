@@ -1,6 +1,6 @@
 {
   "name": "@sardine/lightningcss-plugin-url-composer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Lightning CSS plugin to compose strings in the CSS",
   "type": "module",
   "source": "src/urlComposer.mjs",
