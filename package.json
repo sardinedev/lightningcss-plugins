@@ -1,6 +1,5 @@
 {
   "name": "lightningcss-plugins",
-  "version": "1.0.0",
   "description": "A collection of Lightning CSS plugins",
   "private": true,
   "workspaces": [
