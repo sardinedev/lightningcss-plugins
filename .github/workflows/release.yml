@@ -41,6 +41,7 @@ jobs:
         run: npm run release
 
       - name: Publish to NPM
+        if: github.ref_name == 'main'
         id: changesets
         uses: changesets/action@v1
         with:
