@@ -1,3 +1,6 @@
+import type { Url } from "lightningcss";
+type urlComposerOptions = Record<string, string>;
+
 /**
  * @typedef {Object.<string, string>} mappping - A case sensitive key value pair
  */
@@ -18,12 +21,12 @@
  *  new TypeError("Replaced URL is not the same")
  * );
  */
-export default (mappping) => ({
+export default (mappping: urlComposerOptions) => ({
 	/**
 	 * @param {import('lightningcss').Url} url - The url object to transform
 	 * @returns {import('lightningcss').Url} - The transformed url object
 	 */
-	Url(url) {
+	Url(url: Url): Url {
 		for (const [key, value] of Object.entries(mappping)) {
 			const replacementKey = `\${${key}}`;
 			if (url.url.includes(replacementKey)) {
