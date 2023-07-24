@@ -2,12 +2,17 @@
   "name": "@sardine/lightningcss-plugin-url-composer",
   "version": "1.0.1",
   "description": "A Lightning CSS plugin to compose strings in the CSS",
-  "type": "module",
   "source": "src/urlComposer.mjs",
-  "main": "src/urlComposer.mjs",
-  "exports": "./src/urlComposer.mjs",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
   "files": [
-    "src"
+    "dist"
   ],
   "publishConfig": {
     "access": "public"
@@ -23,6 +28,7 @@
   },
   "homepage": "https://github.com/sardinedev/lightningcss-plugins#readme",
   "scripts": {
+    "build": "parcel build",
     "test": "node --test src/*.test.mjs",
     "lint": "npx rome check ./src",
     "format": "npx rome format ./src"
