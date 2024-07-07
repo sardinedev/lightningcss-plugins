@@ -17,8 +17,5 @@
 		"lefthook": "^1.6.18",
 		"turbo": "^2.0.6"
 	},
-	"lint-staged": {
-		"*.{js,ts,mjs}": ["npx @biomejs/biome check --write ./packages"]
-	},
 	"packageManager": "npm@10.7.0"
 }
