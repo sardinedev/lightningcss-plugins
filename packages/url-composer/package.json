@@ -2,15 +2,12 @@
   "name": "@sardine/lightningcss-plugin-url-composer",
   "version": "1.0.1",
   "description": "A Lightning CSS plugin to compose strings in the CSS",
-  "source": "src/urlComposer.ts",
-  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.mjs"
     }
   },
   "files": [
@@ -30,11 +27,18 @@
   },
   "homepage": "https://github.com/sardinedev/lightningcss-plugins#readme",
   "scripts": {
-    "build": "parcel build",
-    "test": "node --test src/*.test.mjs",
-    "lint": "npx @biomejs/biome check --write ./src"
+    "build": "vite build",
+    "test": "vitest run --coverage",
+    "lint": "biome check --write ./src"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.8.3"
+    "@biomejs/biome": "^1.8.3",
+    "@tsconfig/node20": "^20.1.4",
+    "@tsconfig/strictest": "^2.0.5",
+    "@vitest/coverage-v8": "^1.6.0",
+    "lightningcss": "^1.25.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.3",
+    "vitest": "^1.6.0"
   }
 }

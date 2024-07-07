@@ -1,4 +1,4 @@
 {
   "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node20/tsconfig.json"],
-  "exclude": ["./**/__tests__/**", "./**/dist/**"],
+  "exclude": ["./dist"]
 }
