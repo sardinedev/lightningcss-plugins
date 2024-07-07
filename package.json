@@ -8,7 +8,7 @@
   "scripts": {
     "format": "npx turbo run format",
     "lint": "npx turbo run lint",
-    "prepare": "husky install",
+    "prepare": "husky",
     "release": "turbo run release",
     "test": "npx turbo run test"
   },
@@ -31,5 +31,6 @@
     "*.{js,ts,mjs}": [
       "npx @biomejs/biome check --write ./packages"
     ]
-  }
+  },
+  "packageManager": "npm@10.7.0"
 }

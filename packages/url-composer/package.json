@@ -33,5 +33,8 @@
     "build": "parcel build",
     "test": "node --test src/*.test.mjs",
     "lint": "npx @biomejs/biome check --write ./src"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.8.3"
   }
 }
