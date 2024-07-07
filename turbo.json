@@ -1,13 +1,14 @@
 {
-    "$schema": "https://turbo.build/schema.json",
-    "tasks": {
-        "lint": {},
-        "test": {},
-        "release": {
-            "dependsOn": [
-                "test",
-                "lint"
-            ]
-        }
-    }
+	"$schema": "https://turbo.build/schema.json",
+	"tasks": {
+		"lint": {},
+		"test": {
+			"outputs": ["coverage/**"]
+		},
+		"types:check": {},
+		"types:export": {},
+		"build": {
+			"dependsOn": ["test", "lint", "types:check", "types:export"]
+		}
+	}
 }
