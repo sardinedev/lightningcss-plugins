@@ -14,22 +14,22 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@biomejs/biome": "1.8.3",
     "@changesets/changelog-github": "^0.4.8",
     "@changesets/cli": "^2.26.1",
-    "@tsconfig/node18": "^18.2.0",
+    "@tsconfig/node20": "^20.1.4",
     "@tsconfig/strictest": "^2.0.1",
-    "husky": "^8.0.0",
-    "lightningcss": "^1.20.0",
-    "lint-staged": "^13.2.2",
-    "parcel": "^2.9.3",
-    "rome": "^12.0.0",
-    "turbo": "^1.9.4",
-    "typescript": "^5.1.6"
+    "husky": "^9.0.0",
+    "lightningcss": "^1.25.0",
+    "lint-staged": "^15.2.7",
+    "turbo": "^2.0.6",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.3",
+    "vitest": "^1.6.0"
   },
   "lint-staged": {
     "*.{js,ts,mjs}": [
-      "npx rome format ./packages --write",
-      "npx rome check ./packages --apply"
+      "npx @biomejs/biome check --write ./packages"
     ]
   }
 }

@@ -1,8 +1,7 @@
 {
     "$schema": "https://turbo.build/schema.json",
-    "pipeline": {
+    "tasks": {
         "lint": {},
-        "format": {},
         "test": {
             "inputs": [
                 "src/**/*.mjs"
@@ -10,7 +9,6 @@
         },
         "release": {
             "dependsOn": [
-                "format",
                 "test",
                 "lint"
             ]
