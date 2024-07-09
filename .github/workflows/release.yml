@@ -38,7 +38,10 @@ jobs:
         run: npm ci
 
       - name: Run release script
-        run: npm run release
+        run: npm run build
+
+      - name: Export Types
+        run: npm run types:export
 
       - name: Publish to NPM
         if: github.ref_name == 'main'

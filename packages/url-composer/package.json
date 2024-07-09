@@ -1,30 +1,45 @@
 {
-  "name": "@sardine/lightningcss-plugin-url-composer",
-  "version": "1.0.1",
-  "description": "A Lightning CSS plugin to compose strings in the CSS",
-  "type": "module",
-  "source": "src/urlComposer.mjs",
-  "main": "src/urlComposer.mjs",
-  "exports": "./src/urlComposer.mjs",
-  "files": [
-    "src"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sardinedev/lightningcss-plugins.git"
-  },
-  "author": "Hugo Nogueira <hnogueira@marabyte.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/sardinedev/lightningcss-plugins/issues"
-  },
-  "homepage": "https://github.com/sardinedev/lightningcss-plugins#readme",
-  "scripts": {
-    "test": "node --test src/*.test.mjs",
-    "lint": "npx rome check ./src",
-    "format": "npx rome format ./src"
-  }
+	"name": "@sardine/lightningcss-plugin-url-composer",
+	"version": "1.0.1",
+	"description": "A Lightning CSS plugin to compose strings in the CSS",
+	"type": "module",
+	"module": "dist/urlComposer.js",
+	"types": "./dist/urlComposer.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/urlComposer.d.ts",
+			"import": "./dist/urlComposer.js"
+		}
+	},
+	"files": ["dist"],
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sardinedev/lightningcss-plugins.git"
+	},
+	"author": "Hugo Nogueira <hnogueira@marabyte.com>",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/sardinedev/lightningcss-plugins/issues"
+	},
+	"homepage": "https://github.com/sardinedev/lightningcss-plugins#readme",
+	"scripts": {
+		"build": "vite build",
+		"test": "vitest run --coverage",
+		"lint": "biome check --write ./src",
+		"types:check": "tsc -p tsconfig.json",
+		"types:export": "tsc -p tsconfig.export.json"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.8.3",
+		"@tsconfig/node20": "^20.1.4",
+		"@tsconfig/strictest": "^2.0.5",
+		"@vitest/coverage-v8": "^1.6.0",
+		"lightningcss": "^1.25.1",
+		"typescript": "^5.5.3",
+		"vite": "^5.3.3",
+		"vitest": "^1.6.0"
+	}
 }

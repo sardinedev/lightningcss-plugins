@@ -1,31 +1,22 @@
 {
-  "name": "lightningcss-plugins",
-  "description": "A collection of Lightning CSS plugins",
-  "private": true,
-  "workspaces": [
-    "./packages/*"
-  ],
-  "scripts": {
-    "format": "npx turbo run format",
-    "lint": "npx turbo run lint",
-    "prepare": "husky install",
-    "release": "turbo run release",
-    "test": "npx turbo run test"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "@changesets/changelog-github": "^0.4.8",
-    "@changesets/cli": "^2.26.1",
-    "husky": "^8.0.0",
-    "lightningcss": "^1.20.0",
-    "lint-staged": "^13.2.2",
-    "rome": "^12.0.0",
-    "turbo": "^1.9.4"
-  },
-  "lint-staged": {
-    "*.{js,ts,mjs}": [
-      "npx rome format ./packages --write",
-      "npx rome check ./packages --apply"
-    ]
-  }
+	"name": "lightningcss-plugins",
+	"description": "A collection of Lightning CSS plugins",
+	"private": true,
+	"workspaces": ["packages/*"],
+	"scripts": {
+		"format": "npx turbo run format",
+		"lint": "npx turbo run lint",
+		"build": "turbo run build",
+		"test": "npx turbo run test",
+		"types:check": "npx turbo run types:check",
+		"types:export": "npx turbo run types:export"
+	},
+	"license": "MIT",
+	"devDependencies": {
+		"@changesets/changelog-github": "^0.4.8",
+		"@changesets/cli": "^2.26.1",
+		"lefthook": "^1.6.18",
+		"turbo": "^2.0.6"
+	},
+	"packageManager": "npm@10.7.0"
 }

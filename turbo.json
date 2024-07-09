@@ -1,19 +1,15 @@
 {
-    "$schema": "https://turbo.build/schema.json",
-    "pipeline": {
-        "lint": {},
-        "format": {},
-        "test": {
-            "inputs": [
-                "src/**/*.mjs"
-            ]
-        },
-        "release": {
-            "dependsOn": [
-                "format",
-                "test",
-                "lint"
-            ]
-        }
-    }
+	"$schema": "https://turbo.build/schema.json",
+	"tasks": {
+		"lint": {},
+		"test": {
+			"outputs": ["coverage/**"]
+		},
+		"types:check": {},
+		"types:export": {},
+		"build": {
+			"dependsOn": ["test", "lint", "types:check"],
+			"outputs": ["dist/**"]
+		}
+	}
 }

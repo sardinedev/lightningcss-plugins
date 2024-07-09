@@ -1,10 +1,9 @@
-/**
- * @typedef {Object.<string, string>} mappping - A case sensitive key value pair
- */
+import type { Url } from "lightningcss";
+type urlComposerOptions = Record<string, string>;
 
 /**
- * @param {mappping} mappping - An object with key value pairs to replace in the url
- * @returns {import('lightningcss').Visitor} - A visitor that replaces the url
+ * @param mappping An object with key value pairs to replace in the url
+ * @returns A visitor that replaces the url
  * @example
  * const res = transform({
  *  minify: true,
@@ -18,12 +17,8 @@
  *  new TypeError("Replaced URL is not the same")
  * );
  */
-export default (mappping) => ({
-	/**
-	 * @param {import('lightningcss').Url} url - The url object to transform
-	 * @returns {import('lightningcss').Url} - The transformed url object
-	 */
-	Url(url) {
+export default (mappping: urlComposerOptions) => ({
+	Url(url: Url): Url {
 		for (const [key, value] of Object.entries(mappping)) {
 			const replacementKey = `\${${key}}`;
 			if (url.url.includes(replacementKey)) {
