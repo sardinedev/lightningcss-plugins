@@ -18,14 +18,14 @@ type urlComposerOptions = Record<string, string>;
  * );
  */
 export default (mappping: urlComposerOptions) => ({
-	Url(url: Url): Url {
+	Url(visitor: Url): Url {
 		for (const [key, value] of Object.entries(mappping)) {
 			const replacementKey = `\${${key}}`;
-			if (url.url.includes(replacementKey)) {
-				url.url = url.url.replace(replacementKey, value);
+			if (visitor.url.includes(replacementKey)) {
+				visitor.url = visitor.url.replace(replacementKey, value);
 			}
 		}
 
-		return url;
+		return visitor;
 	},
 });
