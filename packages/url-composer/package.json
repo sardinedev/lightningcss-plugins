@@ -3,12 +3,12 @@
 	"version": "1.0.1",
 	"description": "A Lightning CSS plugin to compose strings in the CSS",
 	"type": "module",
-	"module": "dist/index.mjs",
-	"types": "./dist/index.d.ts",
+	"module": "dist/urlComposer.js",
+	"types": "./dist/urlComposer.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.mjs"
+			"types": "./dist/urlComposer.d.ts",
+			"import": "./dist/urlComposer.js"
 		}
 	},
 	"files": ["dist"],

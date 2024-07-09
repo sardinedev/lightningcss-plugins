@@ -8,7 +8,7 @@
 		"types:check": {},
 		"types:export": {},
 		"build": {
-			"dependsOn": ["test", "lint", "types:check", "types:export"],
+			"dependsOn": ["test", "lint", "types:check"],
 			"outputs": ["dist/**"]
 		}
 	}

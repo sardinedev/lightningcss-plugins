@@ -8,7 +8,8 @@
 		"lint": "npx turbo run lint",
 		"build": "turbo run build",
 		"test": "npx turbo run test",
-		"types:check": "npx turbo run types:check"
+		"types:check": "npx turbo run types:check",
+		"types:export": "npx turbo run types:export"
 	},
 	"license": "MIT",
 	"devDependencies": {
