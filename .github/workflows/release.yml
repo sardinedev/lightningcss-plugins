@@ -19,6 +19,14 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
       - name: Configure Git User
         run: |
           git config --global user.email "petinga@sardine.dev"
@@ -37,7 +45,16 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Run release script
+      - name: Run tests
+        run: npm test
+
+      - name: Run lint and format
+        run: npm run lint
+
+      - name: Run type check
+        run: npm run types:check
+
+      - name: Build packages
         run: npm run build
 
       - name: Export Types
