@@ -18,5 +18,5 @@
 		"lefthook": "^1.6.18",
 		"turbo": "^2.0.6"
 	},
-	"packageManager": "npm@10.8.1"
+	"packageManager": "npm@10.8.2"
 }
