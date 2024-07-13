@@ -9,7 +9,8 @@
 		"build": "turbo run build",
 		"test": "npx turbo run test",
 		"types:check": "npx turbo run types:check",
-		"types:export": "npx turbo run types:export"
+		"types:export": "npx turbo run types:export",
+		"new": "npx turbo gen plugin"
 	},
 	"license": "MIT",
 	"devDependencies": {
