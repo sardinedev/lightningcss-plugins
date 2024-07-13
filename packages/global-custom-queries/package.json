@@ -1,0 +1,46 @@
+{
+	"name": "@sardine/lightningcss-plugin-global-custom-queries",
+	"version": "0.1.0",
+	"description": "A LightningCSS that enables Custom Media Queries everywhere",
+	"keywords": ["lightningcss-plugin"],
+	"type": "module",
+	"module": "dist/globalCustomQueries.js",
+	"types": "./dist/globalCustomQueries.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/globalCustomQueries.d.ts",
+			"import": "./dist/globalCustomQueries.js"
+		}
+	},
+	"files": ["dist"],
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sardinedev/lightningcss-plugins.git"
+	},
+	"author": "Hugo Nogueira <hnogueira@marabyte.com>",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/sardinedev/lightningcss-plugins/issues"
+	},
+	"homepage": "https://github.com/sardinedev/lightningcss-plugins#readme",
+	"scripts": {
+		"build": "vite build",
+		"test": "vitest run --coverage",
+		"lint": "biome check --write ./src",
+		"types:check": "tsc -p tsconfig.json",
+		"types:export": "tsc -p tsconfig.export.json"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.8.3",
+		"@tsconfig/node20": "^20.1.4",
+		"@tsconfig/strictest": "^2.0.5",
+		"@vitest/coverage-v8": "^2.0.0",
+		"lightningcss": "^1.25.1",
+		"typescript": "^5.5.3",
+		"vite": "^5.3.3",
+		"vitest": "^2.0.0"
+	}
+}
