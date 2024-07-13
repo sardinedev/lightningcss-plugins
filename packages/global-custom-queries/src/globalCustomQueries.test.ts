@@ -2,16 +2,124 @@ import { composeVisitors, transform } from "lightningcss";
 import { expect, it } from "vitest";
 import globalCustomQueries from "./globalCustomQueries";
 
-it("should do things", () => {
-	const res = transform({
+it("should resolve custom queries", () => {
+	const source = `
+		@media (--breakpoint) {
+			.foo {
+				color: red;
+			}
+		}
+	`;
+
+	const result = "@media (width<=100em){.foo{color:red}}";
+
+	const { code } = transform({
 		filename: "test.css",
+		code: Buffer.from(source),
 		minify: true,
-		code: Buffer.from(" "),
-		visitor: composeVisitors([globalCustomQueries({})]),
+		visitor: composeVisitors([
+			globalCustomQueries({ source: "./mocks/custom-media.css" }),
+		]),
 	});
 
-	const actual = res.code.toString();
-	const expected = "";
+	expect(code.toString()).toBe(result);
+});
 
-	expect(actual).toBe(expected);
+it("shouldn't resolve custom queries if custom media is not in the source file", () => {
+	const source = `
+		@media (--small-breakpoint) {
+			.foo {
+				color: red;
+			}
+		}
+	`;
+
+	const result = "@media (--small-breakpoint){.foo{color:red}}";
+
+	const { code } = transform({
+		filename: "test.css",
+		code: Buffer.from(source),
+		minify: true,
+		visitor: composeVisitors([
+			globalCustomQueries({ source: "./mocks/custom-media.css" }),
+		]),
+	});
+
+	expect(code.toString()).toBe(result);
+});
+
+it("shouldn't replace media queries if the source file is empty", () => {
+	const source = `
+		@media (--breakpoint) {
+			.foo {
+				color: red;
+			}
+		}
+	`;
+
+	const result = "@media (--breakpoint){.foo{color:red}}";
+
+	const { code } = transform({
+		filename: "test.css",
+		code: Buffer.from(source),
+		minify: true,
+		visitor: composeVisitors([
+			globalCustomQueries({ source: "./mocks/no-custom-media.css" }),
+		]),
+	});
+
+	expect(code.toString()).toBe(result);
+});
+
+it("should resolve custom queries with multiple media queries", () => {
+	const source = `
+		.foo {
+			color: red;
+			@media (--breakpoint) {
+				color: blue;
+			}
+		}
+		
+
+		@media (--breakpoint) {
+			.bar {
+				color: blue;
+			}
+		}
+	`;
+
+	const result =
+		".foo{color:red;@media (width<=100em){&{color:#00f}}}@media (width<=100em){.bar{color:#00f}}";
+
+	const { code } = transform({
+		filename: "test.css",
+		code: Buffer.from(source),
+		minify: true,
+		visitor: composeVisitors([
+			globalCustomQueries({ source: "./mocks/custom-media.css" }),
+		]),
+	});
+
+	expect(code.toString()).toBe(result);
+});
+
+it("should throw an error if the custom media queries are not found", () => {
+	const source = `
+		@media (--breakpoint) {
+			.foo {
+				color: red;
+			}
+		}
+	`;
+
+	expect(() =>
+		transform({
+			filename: "test.css",
+			code: Buffer.from(source),
+			minify: true,
+			visitor: composeVisitors([
+				globalCustomQueries({ source: "./mocks/no-file.css" }),
+			]),
+		}),
+	).toThrowError();
 });

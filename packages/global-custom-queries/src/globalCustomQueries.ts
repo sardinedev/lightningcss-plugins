@@ -1,3 +1,4 @@
+import path from "node:path";
 import { bundle } from "lightningcss";
 import type { Declaration, MediaQuery, StyleSheet } from "lightningcss";
 
@@ -6,29 +7,51 @@ export type Options = {
 	source: string;
 };
 
-function returnAST(path: string): StyleSheet<Declaration, MediaQuery> {
+function returnAST(source: string): StyleSheet<Declaration, MediaQuery> | null {
 	let ast: StyleSheet<Declaration, MediaQuery> | null = null;
-	bundle({
-		filename: path,
-		drafts: {
-			customMedia: true,
-		},
-		visitor: {
-			StyleSheet(stylesheet) {
-				ast = stylesheet;
+	try {
+		bundle({
+			filename: path.join(__dirname, source),
+			drafts: {
+				customMedia: true,
 			},
-		},
-	});
-	if (!ast) {
-		throw new Error(
-			"[@sardine/lightningcss-plugin-global-custom-queries]: Could not find Media Queries in the file",
+			visitor: {
+				StyleSheet(stylesheet) {
+					ast = stylesheet;
+				},
+			},
+		});
+		return ast;
+	} catch (error) {
+		throw Error(
+			`[@sardine/lightningcss-plugin-global-custom-queries]: ${(error as Error).message}`,
 		);
 	}
-	return ast;
 }
 
+/**
+ * @param source The path to the file you want to extract the custom queries from
+ * @returns A visitor that resolves the custom queries
+ * @example
+ * const res = transform({
+ * minify: true,
+ * code: Buffer.from("@media (--small-breakpoint){.foo{color:red}}"),
+ * visitor: composeVisitors([globalCustomQueries({ source: "./custom-media.css" })]),
+ * });
+ *
+ * assert.strictEqual(
+ * res.code.toString(),
+ * "@media (width<=100em){.foo{color:red}}",
+ * new TypeError("Replaced URL is not the same")
+ * );
+ */
 export default ({ source }: Options) => {
 	const ast = returnAST(source);
+	if (!ast) {
+		throw Error(
+			`[@sardine/lightningcss-plugin-global-custom-queries]: The file "${source}" does not contain valid CSS.`,
+		);
+	}
 	return {
 		MediaQuery(query: MediaQuery): MediaQuery {
 			if (

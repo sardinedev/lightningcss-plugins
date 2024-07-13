@@ -2,13 +2,14 @@
 	"name": "@sardine/lightningcss-plugin-global-custom-queries",
 	"version": "0.1.0",
 	"description": "A LightningCSS that enables Custom Media Queries everywhere",
+	"keywords": ["lightningcss-plugin"],
 	"type": "module",
-	"module": "dist/global-custom-queries.js",
-	"types": "./dist/global-custom-queries.d.ts",
+	"module": "dist/globalCustomQueries.js",
+	"types": "./dist/globalCustomQueries.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/global-custom-queries.d.ts",
-			"import": "./dist/global-custom-queries.js"
+			"types": "./dist/globalCustomQueries.d.ts",
+			"import": "./dist/globalCustomQueries.js"
 		}
 	},
 	"files": ["dist"],

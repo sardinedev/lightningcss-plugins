@@ -15,5 +15,9 @@ export default defineConfig({
 			formats: ["es"],
 			fileName: "globalCustomQueries",
 		},
+		rollupOptions: {
+			// make sure to externalize deps that shouldn't be bundled
+			external: ["lightningcss"],
+		},
 	},
 });
