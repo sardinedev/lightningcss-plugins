@@ -4,12 +4,12 @@
 	"description": "A LightningCSS plugin to compose selectors",
 	"keywords": ["lightningcss-plugin"],
 	"type": "module",
-	"module": "dist/global-composes.js",
-	"types": "./dist/global-composes.d.ts",
+	"module": "dist/globalComposes.js",
+	"types": "./dist/globalComposes.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/global-composes.d.ts",
-			"import": "./dist/global-composes.js"
+			"types": "./dist/globalComposes.d.ts",
+			"import": "./dist/globalComposes.js"
 		}
 	},
 	"files": ["dist"],

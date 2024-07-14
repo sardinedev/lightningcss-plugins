@@ -10,10 +10,15 @@ export default defineConfig({
 	},
 	build: {
 		minify: false,
+		target: "node20",
 		lib: {
 			entry: resolve(__dirname, "src/globalComposes.ts"),
 			formats: ["es"],
 			fileName: "globalComposes",
+		},
+		rollupOptions: {
+			// make sure to externalize deps that shouldn't be bundled
+			external: ["lightningcss", "node:path"],
 		},
 	},
 });
