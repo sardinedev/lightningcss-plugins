@@ -13,6 +13,22 @@ type Options = {
 	source: string;
 };
 
+/**
+ * @param source The path to the file you want to extract the custom queries from
+ * @returns A visitor that composes the global classes
+ * @example
+ * const res = transform({
+ * minify: true,
+ * code: Buffer.from(".foo{@composes bar}"),
+ * visitor: composeVisitors([globalComposes({ source: "./global.css" })]),
+ * });
+ *
+ * assert.strictEqual(
+ * res.code.toString(),
+ * ".foo{color:red}",
+ * new TypeError("Replaced URL is not the same")
+ * );
+ */
 function returnAST(source: string): StyleSheet<Declaration, MediaQuery> | null {
 	let ast: StyleSheet<Declaration, MediaQuery> | null = null;
 	try {
