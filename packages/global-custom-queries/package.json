@@ -1,6 +1,6 @@
 {
 	"name": "@sardine/lightningcss-plugin-global-custom-queries",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "A LightningCSS that enables Custom Media Queries everywhere",
 	"keywords": [
 		"lightningcss-plugin"
