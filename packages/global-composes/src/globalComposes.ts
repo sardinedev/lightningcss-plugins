@@ -1,4 +1,3 @@
-import path from "node:path";
 import { bundle } from "lightningcss";
 import type {
 	Declaration,
@@ -33,7 +32,7 @@ function returnAST(source: string): StyleSheet<Declaration, MediaQuery> | null {
 	let ast: StyleSheet<Declaration, MediaQuery> | null = null;
 	try {
 		bundle({
-			filename: path.join(__dirname, source),
+			filename: source,
 			drafts: {
 				customMedia: true,
 			},
