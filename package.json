@@ -4,12 +4,12 @@
 	"private": true,
 	"workspaces": ["packages/*"],
 	"scripts": {
-		"format": "npx turbo run format",
-		"lint": "npx turbo run lint",
-		"build": "turbo run build",
-		"test": "npx turbo run test",
-		"types:check": "npx turbo run types:check",
-		"types:export": "npx turbo run types:export",
+		"format": "npx nx run-many -t format",
+		"lint": "npx nx run-many -t lint",
+		"build": "npx nx run-many -t build",
+		"test": "npx nx run-many -t test",
+		"types:check": "npx nx run-many -t types:check",
+		"types:export": "npx nx run-many -t types:export",
 		"new": "npx turbo gen plugin"
 	},
 	"license": "MIT",
