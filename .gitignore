@@ -130,3 +130,8 @@ dist
 .pnp.*
 
 .turbo
+
+
+
+.nx/cache
+.nx/workspace-data
