@@ -1,0 +1,37 @@
+{
+	"$schema": "./node_modules/nx/schemas/nx-schema.json",
+	"targetDefaults": {
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": ["{projectRoot}/dist"],
+			"cache": true
+		},
+		"test": {
+			"dependsOn": ["^test"],
+			"outputs": ["{projectRoot}/coverage"],
+			"cache": true
+		},
+		"lint": {
+			"dependsOn": ["^lint"],
+			"cache": true
+		},
+		"types:check": {
+			"dependsOn": ["^types:check"],
+			"cache": true
+		}
+	},
+	"defaultBase": "main",
+	"plugins": [
+		{
+			"plugin": "@nx/vite/plugin",
+			"options": {
+				"buildTargetName": "build",
+				"testTargetName": "test",
+				"serveTargetName": "serve",
+				"previewTargetName": "preview",
+				"serveStaticTargetName": "serve-static"
+			}
+		}
+	],
+	"nxCloudAccessToken": "YTk0YTNhOWYtZTMzYi00ZjZkLTg2MTAtNzQwMjc0ODIzZDBifHJlYWQtd3JpdGU="
+}
