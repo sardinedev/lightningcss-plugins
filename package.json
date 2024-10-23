@@ -18,11 +18,11 @@
 		"@changesets/cli": "^2.26.1",
 		"@nx/vite": "19.8.5",
 		"@nx/web": "19.8.5",
-		"@vitest/ui": "^1.3.1",
+		"@vitest/ui": "^2.0.0",
 		"lefthook": "^1.6.18",
 		"nx": "19.8.5",
 		"vite": "^5.0.0",
-		"vitest": "^1.3.1"
+		"vitest": "^2.0.0"
 	},
 	"packageManager": "npm@10.9.0"
 }
