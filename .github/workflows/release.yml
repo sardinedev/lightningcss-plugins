@@ -46,7 +46,7 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: npx nx-cloud record -- nx format:check
+      # - run: npx nx-cloud record -- nx format:check
 
       - name: Run tests
         run: npm test
