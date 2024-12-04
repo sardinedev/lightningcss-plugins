@@ -11,6 +11,10 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   release:
     name: Release
@@ -18,6 +22,8 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configure Git User
         run: |
@@ -38,6 +44,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - uses: nrwl/nx-set-shas@v4
+
       - name: Run tests
         run: npm test
 
@@ -52,6 +60,8 @@ jobs:
 
       - name: Export Types
         run: npm run types:export
+
+      # - run: npx nx-cloud record -- nx format:check
 
       - name: Publish to NPM
         if: github.ref_name == 'main'
