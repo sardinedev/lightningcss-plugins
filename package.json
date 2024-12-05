@@ -22,5 +22,5 @@
 		"lefthook": "^1.6.18",
 		"nx": "19.8.14"
 	},
-	"packageManager": "npm@10.9.1"
+	"packageManager": "npm@10.9.2"
 }
