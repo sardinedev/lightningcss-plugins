@@ -1,11 +1,5 @@
+import type { Declaration, DeclarationBlock, MediaQuery, Rule, StyleSheet } from "lightningcss";
 import { bundle } from "lightningcss";
-import type {
-	Declaration,
-	DeclarationBlock,
-	MediaQuery,
-	Rule,
-	StyleSheet,
-} from "lightningcss";
 
 type Options = {
 	/* The path to the file you want to extract the global classes from */
@@ -44,9 +38,7 @@ function returnAST(source: string): StyleSheet<Declaration, MediaQuery> | null {
 		});
 		return ast;
 	} catch (error) {
-		throw Error(
-			`[@sardine/lightningcss-plugin-global-composes]: ${(error as Error).message}`,
-		);
+		throw Error(`[@sardine/lightningcss-plugin-global-composes]: ${(error as Error).message}`);
 	}
 }
 
@@ -68,9 +60,7 @@ function findClass(name: string, ast: StyleSheet<Declaration, MediaQuery>) {
 export default ({ source }: Options) => {
 	const ast = returnAST(source);
 	if (!ast) {
-		throw Error(
-			`[@sardine/lightningcss-plugin-global-composes]: The file "${source}" does not contain valid CSS.`,
-		);
+		throw Error(`[@sardine/lightningcss-plugin-global-composes]: The file "${source}" does not contain valid CSS.`);
 	}
 	const classes = new Map<string, DeclarationBlock<Declaration>>();
 	return {
@@ -89,14 +79,10 @@ export default ({ source }: Options) => {
 										}
 									}
 									const declararations = classes.get(name);
-									if (
-										declararations?.declarations &&
-										rule.value.declarations?.declarations
-									) {
-										rule.value.declarations.declarations =
-											declararations.declarations.concat(
-												rule.value.declarations?.declarations,
-											);
+									if (declararations?.declarations && rule.value.declarations?.declarations) {
+										rule.value.declarations.declarations = declararations.declarations.concat(
+											rule.value.declarations?.declarations,
+										);
 									}
 								}
 							}

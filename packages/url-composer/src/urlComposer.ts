@@ -1,4 +1,5 @@
 import type { Url } from "lightningcss";
+
 type urlComposerOptions = Record<string, string>;
 
 /**

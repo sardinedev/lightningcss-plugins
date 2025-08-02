@@ -18,7 +18,7 @@ it("should resolve custom queries", () => {
 
 	const { code } = transform({
 		filename: "test.css",
-		code: Buffer.from(source),
+		code: new TextEncoder().encode(source),
 		minify: true,
 		visitor: composeVisitors([globalCustomQueries({ source: mockFile })]),
 	});
@@ -41,7 +41,7 @@ it("shouldn't resolve custom queries if custom media is not in the source file",
 
 	const { code } = transform({
 		filename: "test.css",
-		code: Buffer.from(source),
+		code: new TextEncoder().encode(source),
 		minify: true,
 		visitor: composeVisitors([globalCustomQueries({ source: mockFile })]),
 	});
@@ -64,7 +64,7 @@ it("shouldn't replace media queries if the source file is empty", () => {
 
 	const { code } = transform({
 		filename: "test.css",
-		code: Buffer.from(source),
+		code: new TextEncoder().encode(source),
 		minify: true,
 		visitor: composeVisitors([globalCustomQueries({ source: mockFile })]),
 	});
@@ -89,14 +89,13 @@ it("should resolve custom queries with multiple media queries", () => {
 		}
 	`;
 
-	const result =
-		".foo{color:red;@media (width<=100em){&{color:#00f}}}@media (width<=100em){.bar{color:#00f}}";
+	const result = ".foo{color:red;@media (width<=100em){color:#00f}}@media (width<=100em){.bar{color:#00f}}";
 
 	const mockFile = path.join(__dirname, "./mocks/custom-media.css");
 
 	const { code } = transform({
 		filename: "test.css",
-		code: Buffer.from(source),
+		code: new TextEncoder().encode(source),
 		minify: true,
 		visitor: composeVisitors([globalCustomQueries({ source: mockFile })]),
 	});
@@ -118,7 +117,7 @@ it("should throw an error if the custom media queries are not found", () => {
 	expect(() =>
 		transform({
 			filename: "test.css",
-			code: Buffer.from(source),
+			code: new TextEncoder().encode(source),
 			minify: true,
 			visitor: composeVisitors([globalCustomQueries({ source: mockFile })]),
 		}),

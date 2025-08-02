@@ -1,5 +1,5 @@
-import { bundle } from "lightningcss";
 import type { Declaration, MediaQuery, StyleSheet } from "lightningcss";
+import { bundle } from "lightningcss";
 
 export type Options = {
 	/* The path to the file you want to extract the custom queries from */
@@ -22,9 +22,7 @@ function returnAST(source: string): StyleSheet<Declaration, MediaQuery> | null {
 		});
 		return ast;
 	} catch (error) {
-		throw Error(
-			`[@sardine/lightningcss-plugin-global-custom-queries]: ${(error as Error).message}`,
-		);
+		throw Error(`[@sardine/lightningcss-plugin-global-custom-queries]: ${(error as Error).message}`);
 	}
 }
 
@@ -53,17 +51,11 @@ export default ({ source }: Options) => {
 	}
 	return {
 		MediaQuery(query: MediaQuery): MediaQuery {
-			if (
-				query?.condition?.type === "feature" &&
-				query.condition.value.name.startsWith("--")
-			) {
+			if (query?.condition?.type === "feature" && query.condition.value.name.startsWith("--")) {
 				const matchedConditionValue = query.condition.value;
 				let resolvedQuery = null;
 				for (const rule of ast.rules) {
-					if (
-						rule.type === "custom-media" &&
-						rule.value.name === matchedConditionValue.name
-					) {
+					if (rule.type === "custom-media" && rule.value.name === matchedConditionValue.name) {
 						resolvedQuery = rule.value.query.mediaQueries[0];
 						break;
 					}

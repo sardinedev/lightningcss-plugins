@@ -2,9 +2,10 @@
 	"name": "lightningcss-plugins",
 	"description": "A collection of Lightning CSS plugins",
 	"private": true,
-	"workspaces": ["packages/*"],
+	"workspaces": [
+		"packages/*"
+	],
 	"scripts": {
-		"format": "npx nx affected -t format",
 		"lint": "npx nx affected -t lint",
 		"build": "npx nx affected -t build",
 		"test": "npx nx affected -t test",
@@ -14,12 +15,11 @@
 	},
 	"license": "MIT",
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
-		"@changesets/changelog-github": "^0.5.0",
-		"@changesets/cli": "^2.26.1",
+		"@changesets/changelog-github": "0.5.1",
+		"@changesets/cli": "2.29.5",
 		"@nx/vite": "21.3.11",
 		"@nx/web": "21.3.11",
-		"lefthook": "^1.6.18",
+		"lefthook": "1.12.2",
 		"nx": "21.3.11"
 	},
 	"packageManager": "npm@11.0.0"

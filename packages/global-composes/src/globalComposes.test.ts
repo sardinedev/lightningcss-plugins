@@ -17,7 +17,7 @@ it("should inject class properties", () => {
 	const { code } = transform({
 		filename: "test.css",
 		minify: true,
-		code: Buffer.from(source),
+		code: new TextEncoder().encode(source),
 		visitor: composeVisitors([globalComposes({ source: mockPath })]),
 	});
 
@@ -39,7 +39,7 @@ it("should inject class properties before existing properties", () => {
 	const { code } = transform({
 		filename: "test.css",
 		minify: true,
-		code: Buffer.from(source),
+		code: new TextEncoder().encode(source),
 		visitor: composeVisitors([globalComposes({ source: mockPath })]),
 	});
 
@@ -61,7 +61,7 @@ it("should inject multiple class properties", () => {
 	const { code } = transform({
 		filename: "test.css",
 		minify: true,
-		code: Buffer.from(source),
+		code: new TextEncoder().encode(source),
 		visitor: composeVisitors([globalComposes({ source: mockPath })]),
 	});
 
