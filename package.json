@@ -6,7 +6,6 @@
 		"packages/*"
 	],
 	"scripts": {
-		"format": "npx nx affected -t format",
 		"lint": "npx nx affected -t lint",
 		"build": "npx nx affected -t build",
 		"test": "npx nx affected -t test",

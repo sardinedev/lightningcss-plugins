@@ -89,8 +89,7 @@ it("should resolve custom queries with multiple media queries", () => {
 		}
 	`;
 
-	const result =
-		".foo{color:red;@media (width<=100em){&{color:#00f}}}@media (width<=100em){.bar{color:#00f}}";
+	const result = ".foo{color:red;@media (width<=100em){&{color:#00f}}}@media (width<=100em){.bar{color:#00f}}";
 
 	const mockFile = path.join(__dirname, "./mocks/custom-media.css");
 

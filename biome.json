@@ -4,6 +4,10 @@
 		"enabled": true,
 		"actions": { "source": { "organizeImports": "on" } }
 	},
+	"formatter": {
+		"enabled": true,
+		"lineWidth": 120
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
