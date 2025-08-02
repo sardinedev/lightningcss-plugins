@@ -2,7 +2,9 @@
 	"name": "@sardine/lightningcss-plugin-global-composes",
 	"version": "1.0.1",
 	"description": "A LightningCSS plugin to compose selectors",
-	"keywords": ["lightningcss-plugin"],
+	"keywords": [
+		"lightningcss-plugin"
+	],
 	"type": "module",
 	"module": "dist/globalComposes.js",
 	"types": "./dist/globalComposes.d.ts",
@@ -12,7 +14,9 @@
 			"import": "./dist/globalComposes.js"
 		}
 	},
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"publishConfig": {
 		"access": "public"
 	},
@@ -34,7 +38,7 @@
 		"types:export": "tsc -p tsconfig.export.json"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.8.3",
+		"@biomejs/biome": "2.1.3",
 		"@tsconfig/node-lts": "22.0.2",
 		"@tsconfig/strictest": "2.0.5",
 		"@vitest/coverage-v8": "3.2.4",

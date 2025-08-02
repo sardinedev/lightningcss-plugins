@@ -1,4 +1,3 @@
-import { bundle } from "lightningcss";
 import type {
 	Declaration,
 	DeclarationBlock,
@@ -6,6 +5,7 @@ import type {
 	Rule,
 	StyleSheet,
 } from "lightningcss";
+import { bundle } from "lightningcss";
 
 type Options = {
 	/* The path to the file you want to extract the global classes from */

@@ -1,5 +1,5 @@
-import { bundle } from "lightningcss";
 import type { Declaration, MediaQuery, StyleSheet } from "lightningcss";
+import { bundle } from "lightningcss";
 
 export type Options = {
 	/* The path to the file you want to extract the custom queries from */
