@@ -19,7 +19,7 @@
 		"@changesets/cli": "2.29.8",
 		"@nx/vite": "21.6.10",
 		"@nx/web": "21.6.10",
-		"lefthook": "1.12.3",
+		"lefthook": "1.13.6",
 		"nx": "21.6.10"
 	},
 	"packageManager": "npm@11.0.0"
