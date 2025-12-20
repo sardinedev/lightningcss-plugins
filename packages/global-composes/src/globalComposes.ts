@@ -156,14 +156,14 @@ export default ({ source }: Options) => {
 							const names = extractClassNames(child);
 							for (const name of names) {
 								if (!classes.has(name)) {
-									const declararations = findClass(name, ast);
-									if (declararations) {
-										classes.set(name, declararations);
+									const declarations = findClass(name, ast);
+									if (declarations) {
+										classes.set(name, declarations);
 									}
 								}
-								const declararations = classes.get(name);
-								if (declararations?.declarations && rule.value.declarations?.declarations) {
-									rule.value.declarations.declarations = declararations.declarations.concat(
+								const declarations = classes.get(name);
+								if (declarations?.declarations && rule.value.declarations?.declarations) {
+									rule.value.declarations.declarations = declarations.declarations.concat(
 										rule.value.declarations?.declarations,
 									);
 								}
