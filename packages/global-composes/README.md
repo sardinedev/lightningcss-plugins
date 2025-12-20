@@ -28,3 +28,45 @@ const { code } = bundle({
   visitor: composeVisitors([globalComposes({ source: "./css/globals.css" })]),
 });
 ```
+
+## Avoiding warnings
+
+By default, LightningCSS will emit a warning when it encounters the `@composes` at-rule: `[lightningcss] Unknown at rule: @composes`. This happens because `@composes` is parsed as an unknown at-rule before the plugin can process it.
+
+To avoid this warning, you can configure LightningCSS to recognize `@composes` as a custom at-rule:
+
+```js
+import { transform, composeVisitors } from "lightningcss";
+import globalComposes, { globalComposesCustomAtRules } from "@sardine/lightningcss-plugin-global-composes";
+
+const { code } = transform({
+  filename: "style.css",
+  minify: true,
+  code: Buffer.from(css),
+  customAtRules: {
+    ...globalComposesCustomAtRules,
+  },
+  visitor: composeVisitors([globalComposes({ source: "./css/globals.css" })]),
+});
+```
+
+### With Vite
+
+When using Vite with the `lightningcss` CSS transformer:
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite';
+import { globalComposesCustomAtRules } from '@sardine/lightningcss-plugin-global-composes';
+
+export default defineConfig({
+  css: {
+    transformer: 'lightningcss',
+    lightningcss: {
+      customAtRules: {
+        ...globalComposesCustomAtRules,
+      },
+    },
+  },
+});
+```
