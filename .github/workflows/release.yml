@@ -61,8 +61,6 @@ jobs:
       - name: Export Types
         run: npm run types:export
 
-      # - run: npx nx-cloud record -- nx format:check
-
       - name: Publish to NPM
         if: github.ref_name == 'main'
         id: changesets
