@@ -1,0 +1,25 @@
+name: Setup repo
+description: Setup Node.js and install dependencies.
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+        cache: npm
+        registry-url: "https://registry.npmjs.org"
+        scope: "@sardine"
+
+    - name: Install Dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Set Nx SHAs
+      uses: nrwl/nx-set-shas@v4

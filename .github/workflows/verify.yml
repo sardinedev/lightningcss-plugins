@@ -1,0 +1,58 @@
+name: Static Checks
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repo
+        uses: ./.github/actions/setup-repo
+
+      - name: Run tests
+        run: npm test
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repo
+        uses: ./.github/actions/setup-repo
+
+      - name: Run lint and format
+        run: npm run lint
+
+  types:
+    name: Type check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repo
+        uses: ./.github/actions/setup-repo
+
+      - name: Run type check
+        run: npm run types:check
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repo
+        uses: ./.github/actions/setup-repo
+
+      - name: Build packages
+        run: npm run build
+
+  export-types:
+    name: Export types
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repo
+        uses: ./.github/actions/setup-repo
+
+      - name: Export Types
+        run: npm run types:export
