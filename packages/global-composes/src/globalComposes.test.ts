@@ -68,7 +68,7 @@ it("should inject multiple class properties", () => {
 	expect(code.toString()).toBe(result);
 });
 
-it("should work with customAtRules configuration (no warnings)", () => {
+it("should work with customAtRules configuration", () => {
 	const source = `
 		.foo {
 			@composes bar;
@@ -88,8 +88,29 @@ it("should work with customAtRules configuration (no warnings)", () => {
 		},
 		visitor: composeVisitors([globalComposes({ source: mockPath })]),
 	});
-
 	expect(code.toString()).toBe(result);
+});
+
+it("should not emit warnings about unknown at rule @composes", () => {
+	const source = `
+		.foo {
+			@composes bar;
+		}
+	`;
+
+	const mockPath = path.join(__dirname, "./mocks/compose.css");
+
+	const { warnings } = transform({
+		filename: "test.css",
+		minify: true,
+		code: new TextEncoder().encode(source),
+		customAtRules: {
+			...globalComposesCustomAtRules,
+		},
+		visitor: composeVisitors([globalComposes({ source: mockPath })]),
+	});
+
+	expect(warnings).toHaveLength(0);
 });
 
 it("should inject multiple class properties with customAtRules", () => {
