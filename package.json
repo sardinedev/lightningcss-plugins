@@ -17,10 +17,10 @@
 	"devDependencies": {
 		"@changesets/changelog-github": "0.5.1",
 		"@changesets/cli": "2.29.8",
-		"@nx/vite": "21.6.10",
-		"@nx/web": "21.6.10",
+		"@nx/vite": "22.3.3",
+		"@nx/web": "22.3.3",
 		"lefthook": "2.0.12",
-		"nx": "21.6.10"
+		"nx": "22.3.3"
 	},
 	"packageManager": "npm@11.0.0"
 }
