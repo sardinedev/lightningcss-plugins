@@ -1,7 +1,7 @@
 import path from "node:path";
 import { composeVisitors, transform } from "lightningcss";
 import { expect, it } from "vitest";
-import globalComposes from "./globalComposes";
+import globalComposes, { globalComposesCustomAtRules } from "./globalComposes";
 
 it("should inject class properties", () => {
 	const source = `
@@ -62,6 +62,76 @@ it("should inject multiple class properties", () => {
 		filename: "test.css",
 		minify: true,
 		code: new TextEncoder().encode(source),
+		visitor: composeVisitors([globalComposes({ source: mockPath })]),
+	});
+
+	expect(code.toString()).toBe(result);
+});
+
+it("should work with customAtRules configuration", () => {
+	const source = `
+		.foo {
+			@composes bar;
+		}
+	`;
+
+	const result = ".foo{color:red}";
+
+	const mockPath = path.join(__dirname, "./mocks/compose.css");
+
+	const { code } = transform({
+		filename: "test.css",
+		minify: true,
+		code: new TextEncoder().encode(source),
+		customAtRules: {
+			...globalComposesCustomAtRules,
+		},
+		visitor: composeVisitors([globalComposes({ source: mockPath })]),
+	});
+	expect(code.toString()).toBe(result);
+});
+
+it("should not emit warnings about unknown at rule @composes", () => {
+	const source = `
+		.foo {
+			@composes bar;
+		}
+	`;
+
+	const mockPath = path.join(__dirname, "./mocks/compose.css");
+
+	const { warnings } = transform({
+		filename: "test.css",
+		minify: true,
+		code: new TextEncoder().encode(source),
+		customAtRules: {
+			...globalComposesCustomAtRules,
+		},
+		visitor: composeVisitors([globalComposes({ source: mockPath })]),
+	});
+
+	expect(warnings).toHaveLength(0);
+});
+
+it("should inject multiple class properties with customAtRules", () => {
+	const source = `
+		.foo {
+			@composes bar;
+			@composes small;
+		}
+	`;
+
+	const result = ".foo{color:red;font-size:12px}";
+
+	const mockPath = path.join(__dirname, "./mocks/compose.css");
+
+	const { code } = transform({
+		filename: "test.css",
+		minify: true,
+		code: new TextEncoder().encode(source),
+		customAtRules: {
+			...globalComposesCustomAtRules,
+		},
 		visitor: composeVisitors([globalComposes({ source: mockPath })]),
 	});
 
