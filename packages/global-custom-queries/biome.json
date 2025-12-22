@@ -1,0 +1,15 @@
+{
+	"root": false,
+	"extends": "//",
+	"linter": {
+		"rules": {
+			"suspicious": {
+				"noUnknownAtRules": {
+					"options": {
+						"ignore": ["custom-media"]
+					}
+				}
+			}
+		}
+	}
+}
