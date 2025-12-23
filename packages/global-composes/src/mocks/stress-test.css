@@ -1,0 +1,182 @@
+/* Stress test fixture with 60 classes for performance benchmarking */
+
+.utility-1 {
+	margin: 0;
+}
+.utility-2 {
+	padding: 0;
+}
+.utility-3 {
+	color: red;
+}
+.utility-4 {
+	background: blue;
+}
+.utility-5 {
+	font-size: 12px;
+}
+.utility-6 {
+	font-weight: bold;
+}
+.utility-7 {
+	text-align: center;
+}
+.utility-8 {
+	display: flex;
+}
+.utility-9 {
+	flex-direction: column;
+}
+.utility-10 {
+	justify-content: center;
+}
+.utility-11 {
+	align-items: center;
+}
+.utility-12 {
+	gap: 10px;
+}
+.utility-13 {
+	border: 1px solid black;
+}
+.utility-14 {
+	border-radius: 4px;
+}
+.utility-15 {
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.utility-16 {
+	opacity: 0.8;
+}
+.utility-17 {
+	cursor: pointer;
+}
+.utility-18 {
+	transition: all 0.3s;
+}
+.utility-19 {
+	width: 100%;
+}
+.utility-20 {
+	height: 100%;
+}
+.utility-21 {
+	max-width: 1200px;
+}
+.utility-22 {
+	max-height: 800px;
+}
+.utility-23 {
+	min-width: 320px;
+}
+.utility-24 {
+	min-height: 200px;
+}
+.utility-25 {
+	overflow: hidden;
+}
+.utility-26 {
+	overflow-x: auto;
+}
+.utility-27 {
+	overflow-y: scroll;
+}
+.utility-28 {
+	position: relative;
+}
+.utility-29 {
+	position: absolute;
+}
+.utility-30 {
+	position: fixed;
+}
+.utility-31 {
+	top: 0;
+}
+.utility-32 {
+	right: 0;
+}
+.utility-33 {
+	bottom: 0;
+}
+.utility-34 {
+	left: 0;
+}
+.utility-35 {
+	z-index: 100;
+}
+.utility-36 {
+	line-height: 1.5;
+}
+.utility-37 {
+	letter-spacing: 0.05em;
+}
+.utility-38 {
+	text-transform: uppercase;
+}
+.utility-39 {
+	text-decoration: none;
+}
+.utility-40 {
+	white-space: nowrap;
+}
+.utility-41 {
+	word-break: break-word;
+}
+.utility-42 {
+	list-style: none;
+}
+.utility-43 {
+	vertical-align: middle;
+}
+.utility-44 {
+	user-select: none;
+}
+.utility-45 {
+	pointer-events: none;
+}
+.utility-46 {
+	visibility: visible;
+}
+.utility-47 {
+	transform: scale(1);
+}
+.utility-48 {
+	transform-origin: center;
+}
+.utility-49 {
+	filter: blur(0);
+}
+.utility-50 {
+	backdrop-filter: blur(4px);
+}
+.utility-51 {
+	grid-template-columns: repeat(3, 1fr);
+}
+.utility-52 {
+	grid-gap: 20px;
+}
+.utility-53 {
+	flex-wrap: wrap;
+}
+.utility-54 {
+	flex-shrink: 0;
+}
+.utility-55 {
+	flex-grow: 1;
+}
+.utility-56 {
+	order: 1;
+}
+.utility-57 {
+	align-self: flex-start;
+}
+.utility-58 {
+	justify-self: flex-end;
+}
+.utility-59 {
+	aspect-ratio: 16 / 9;
+}
+.utility-60 {
+	object-fit: cover;
+}
