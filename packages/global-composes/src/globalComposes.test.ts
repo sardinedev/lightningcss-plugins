@@ -137,3 +137,31 @@ it("should inject multiple class properties with customAtRules", () => {
 
 	expect(code.toString()).toBe(result);
 });
+
+it("should handle many classes efficiently (stress test)", () => {
+	// Create a source that composes many classes from a large global file
+	const source = `
+		.composed {
+			@composes class1;
+			@composes class10;
+			@composes class20;
+			@composes class30;
+			@composes class40;
+			@composes class50;
+		}
+	`;
+
+	// Expected result should contain all composed class declarations (order may vary due to minification)
+	const result = ".composed{visibility:visible;cursor:pointer;grid-row:20;gap:30px;height:10px;margin:1px}";
+
+	const mockPath = path.join(__dirname, "./mocks/stress.css");
+
+	const { code } = transform({
+		filename: "test.css",
+		minify: true,
+		code: new TextEncoder().encode(source),
+		visitor: composeVisitors([globalComposes({ source: mockPath })]),
+	});
+
+	expect(code.toString()).toBe(result);
+});

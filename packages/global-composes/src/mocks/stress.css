@@ -1,0 +1,151 @@
+/* Stress test file with many classes */
+.class1 {
+	margin: 1px;
+}
+.class2 {
+	padding: 2px;
+}
+.class3 {
+	border-width: 3px;
+}
+.class4 {
+	font-size: 4px;
+}
+.class5 {
+	line-height: 5px;
+}
+.class6 {
+	letter-spacing: 6px;
+}
+.class7 {
+	word-spacing: 7px;
+}
+.class8 {
+	text-indent: 8px;
+}
+.class9 {
+	width: 9px;
+}
+.class10 {
+	height: 10px;
+}
+.class11 {
+	top: 11px;
+}
+.class12 {
+	right: 12px;
+}
+.class13 {
+	bottom: 13px;
+}
+.class14 {
+	left: 14px;
+}
+.class15 {
+	z-index: 15;
+}
+.class16 {
+	opacity: 0.16;
+}
+.class17 {
+	flex: 17;
+}
+.class18 {
+	order: 18;
+}
+.class19 {
+	grid-column: 19;
+}
+.class20 {
+	grid-row: 20;
+}
+.class21 {
+	min-width: 21px;
+}
+.class22 {
+	max-width: 22px;
+}
+.class23 {
+	min-height: 23px;
+}
+.class24 {
+	max-height: 24px;
+}
+.class25 {
+	outline-width: 25px;
+}
+.class26 {
+	outline-offset: 26px;
+}
+.class27 {
+	column-count: 27;
+}
+.class28 {
+	column-gap: 28px;
+}
+.class29 {
+	row-gap: 29px;
+}
+.class30 {
+	gap: 30px;
+}
+.class31 {
+	border-radius: 31px;
+}
+.class32 {
+	border-spacing: 32px;
+}
+.class33 {
+	transform: scale(0.33);
+}
+.class34 {
+	perspective: 34px;
+}
+.class35 {
+	tab-size: 35;
+}
+.class36 {
+	hyphens: auto;
+}
+.class37 {
+	text-align: center;
+}
+.class38 {
+	vertical-align: middle;
+}
+.class39 {
+	list-style-position: inside;
+}
+.class40 {
+	cursor: pointer;
+}
+.class41 {
+	resize: both;
+}
+.class42 {
+	user-select: none;
+}
+.class43 {
+	pointer-events: none;
+}
+.class44 {
+	box-sizing: border-box;
+}
+.class45 {
+	display: flex;
+}
+.class46 {
+	position: relative;
+}
+.class47 {
+	float: left;
+}
+.class48 {
+	clear: both;
+}
+.class49 {
+	overflow: hidden;
+}
+.class50 {
+	visibility: visible;
+}
