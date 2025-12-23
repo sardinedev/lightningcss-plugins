@@ -22,5 +22,5 @@
 		"lefthook": "2.0.12",
 		"nx": "22.3.3"
 	},
-	"packageManager": "npm@11.0.0"
+	"packageManager": "npm@11.7.0"
 }

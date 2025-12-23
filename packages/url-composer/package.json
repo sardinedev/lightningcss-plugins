@@ -38,6 +38,7 @@
 		"@biomejs/biome": "2.3.10",
 		"@tsconfig/node-lts": "24.0.0",
 		"@tsconfig/strictest": "2.0.8",
+		"@types/node": "24.10.4",
 		"@vitest/coverage-v8": "4.0.16",
 		"lightningcss": "1.30.2",
 		"typescript": "5.9.3",
