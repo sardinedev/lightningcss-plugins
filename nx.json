@@ -11,6 +11,10 @@
 			"outputs": ["{projectRoot}/coverage"],
 			"cache": true
 		},
+		"bench": {
+			"dependsOn": ["^bench"],
+			"cache": true
+		},
 		"lint": {
 			"dependsOn": ["^lint"],
 			"cache": true

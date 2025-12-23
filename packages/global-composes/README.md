@@ -70,3 +70,27 @@ export default defineConfig({
   },
 });
 ```
+
+## Development
+
+### Running Tests
+
+```bash
+npm test
+```
+
+### Running Benchmarks
+
+Benchmarks are available to measure performance characteristics of the plugin:
+
+```bash
+npm run bench
+```
+
+Or run benchmarks directly with Vitest:
+
+```bash
+npx vitest bench --run
+```
+
+The benchmark suite includes stress tests with 60+ utility classes to simulate real-world usage patterns and help identify performance bottlenecks.
