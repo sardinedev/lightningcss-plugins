@@ -10,8 +10,7 @@
 		"build": "npx nx affected -t build",
 		"test": "npx nx affected -t test",
 		"types:check": "npx nx affected -t types:check",
-		"types:export": "npx nx affected -t types:export",
-		"new": "npx turbo gen plugin"
+		"types:export": "npx nx affected -t types:export"
 	},
 	"license": "MIT",
 	"devDependencies": {
