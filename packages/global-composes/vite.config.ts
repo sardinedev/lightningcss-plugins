@@ -6,6 +6,9 @@ export default defineConfig({
 			reporter: ["lcovonly", "text-summary"],
 			include: ["src/**/*.ts"],
 		},
+		benchmark: {
+			include: ["src/**/*.bench.ts"],
+		},
 	},
 	build: {
 		minify: false,
