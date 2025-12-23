@@ -42,7 +42,7 @@ When working on a single package, prefer the narrowest Nx target (e.g. `npx nx t
 ## Releases & changelogs
 - The packages follow semantic versioning.
 - This repo uses Changesets (`.changeset/`). If you make a user-facing change, add an appropriate changeset unless the task says not to.
-- If you touch package-facing behavior or docs, update that package’s README/CHANGELOG when appropriate.
+- If you touch public API behavior or docs, update that package’s README/CHANGELOG when appropriate.
 
 ## Safety rails
 - Don’t commit secrets.
