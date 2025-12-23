@@ -81,19 +81,24 @@ function returnAST(source: string): StyleSheet<Declaration, MediaQuery> | null {
 	}
 }
 
-function findClass(name: string, ast: StyleSheet<Declaration, MediaQuery>) {
+/**
+ * Build an index mapping class names to their declaration blocks.
+ * This performs a single AST walk to enable O(1) lookups instead of O(R) scans.
+ */
+function buildClassIndex(ast: StyleSheet<Declaration, MediaQuery>): Map<string, DeclarationBlock<Declaration>> {
+	const classMap = new Map<string, DeclarationBlock<Declaration>>();
 	for (const rule of ast.rules) {
-		if (rule.type === "style" && rule.value.selectors) {
+		if (rule.type === "style" && rule.value.selectors && rule.value.declarations) {
 			for (const selector of rule.value.selectors) {
 				for (const token of selector) {
-					if (token.type === "class" && token.name === name) {
-						return rule.value.declarations;
+					if (token.type === "class") {
+						classMap.set(token.name, rule.value.declarations);
 					}
 				}
 			}
 		}
 	}
-	return null;
+	return classMap;
 }
 
 /**
@@ -139,7 +144,8 @@ export default ({ source }: Options) => {
 	if (!ast) {
 		throw Error(`[@sardine/lightningcss-plugin-global-composes]: The file "${source}" does not contain valid CSS.`);
 	}
-	const classes = new Map<string, DeclarationBlock<Declaration>>();
+	// Build class index once at initialization to avoid repeated AST scans
+	const classIndex = buildClassIndex(ast);
 	return {
 		Rule: {
 			style(rule: Rule<Declaration>): Rule<Declaration> {
@@ -155,13 +161,8 @@ export default ({ source }: Options) => {
 						if (isComposesRule || isCustomComposesRule) {
 							const names = extractClassNames(child);
 							for (const name of names) {
-								if (!classes.has(name)) {
-									const declarations = findClass(name, ast);
-									if (declarations) {
-										classes.set(name, declarations);
-									}
-								}
-								const declarations = classes.get(name);
+								// Use prebuilt index for O(1) lookup instead of O(R) scan
+								const declarations = classIndex.get(name);
 								if (declarations?.declarations && rule.value.declarations?.declarations) {
 									rule.value.declarations.declarations = declarations.declarations.concat(
 										rule.value.declarations?.declarations,
