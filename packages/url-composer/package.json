@@ -35,7 +35,7 @@
 		"types:export": "tsc -p tsconfig.export.json"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.3.10",
+		"@biomejs/biome": "2.4.4",
 		"@tsconfig/node-lts": "24.0.0",
 		"@tsconfig/strictest": "2.0.8",
 		"@types/node": "24.10.13",
