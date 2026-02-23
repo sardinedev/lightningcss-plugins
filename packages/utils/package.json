@@ -5,5 +5,18 @@
 	"type": "module",
 	"exports": {
 		".": "./src/index.ts"
+	},
+	"scripts": {
+		"test": "vitest run --coverage",
+		"lint": "biome check --write ./src",
+		"types:check": "tsc -p tsconfig.json"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.4",
+		"@tsconfig/node-lts": "24.0.0",
+		"@tsconfig/strictest": "2.0.8",
+		"@vitest/coverage-v8": "4.0.18",
+		"typescript": "5.9.3",
+		"vitest": "4.0.18"
 	}
 }
