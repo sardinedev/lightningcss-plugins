@@ -1,4 +1,4 @@
-import type { Declaration, MediaQuery, StyleSheet } from "lightningcss";
+import type { Declaration, MediaCondition, MediaQuery, StyleSheet } from "lightningcss";
 import { bundle } from "lightningcss";
 
 export type Options = {
@@ -6,8 +6,10 @@ export type Options = {
 	source: string;
 };
 
-function returnAST(source: string): StyleSheet<Declaration, MediaQuery> | null {
-	let ast: StyleSheet<Declaration, MediaQuery> | null = null;
+function returnAST(source: string): StyleSheet<Declaration, MediaQuery> {
+	// Definite assignment: bundle always invokes the StyleSheet visitor on success,
+	// and throws (caught below) on failure — so ast is always set before `return`.
+	let ast!: StyleSheet<Declaration, MediaQuery>;
 	try {
 		bundle({
 			filename: source,
@@ -24,6 +26,32 @@ function returnAST(source: string): StyleSheet<Declaration, MediaQuery> | null {
 	} catch (error) {
 		throw Error(`[@sardine/lightningcss-plugin-global-custom-queries]: ${(error as Error).message}`);
 	}
+}
+
+/**
+ * Recursively walks a `MediaCondition` and replaces any custom feature names
+ * (those starting with `--`) with their resolved conditions from the lookup map.
+ *
+ * Handles all three condition shapes from the CSS Media Queries spec:
+ * - `feature`   – a direct `(--name)` reference
+ * - `not`       – negation wrapping an inner condition, e.g. `not (--name)`
+ * - `operation` – AND / OR compound conditions, e.g. `(--name) and (color)`
+ */
+function resolveCondition(condition: MediaCondition, lookup: (name: string) => MediaCondition | null): MediaCondition {
+	if (condition.type === "feature") {
+		const name = condition.value.name;
+		if (typeof name === "string" && name.startsWith("--")) {
+			return lookup(name) ?? condition;
+		}
+		return condition;
+	}
+	if (condition.type === "not") {
+		return { ...condition, value: resolveCondition(condition.value, lookup) };
+	}
+	if (condition.type === "operation") {
+		return { ...condition, conditions: condition.conditions.map((c) => resolveCondition(c, lookup)) };
+	}
+	return condition;
 }
 
 /**
@@ -44,25 +72,24 @@ function returnAST(source: string): StyleSheet<Declaration, MediaQuery> | null {
  */
 export default ({ source }: Options) => {
 	const ast = returnAST(source);
-	if (!ast) {
-		throw Error(
-			`[@sardine/lightningcss-plugin-global-custom-queries]: The file "${source}" does not contain valid CSS.`,
-		);
+
+	/** Index of `@custom-media` rule name → resolved condition, built once at setup. */
+	const customMediaMap = new Map<string, MediaCondition>();
+	for (const rule of ast.rules) {
+		if (rule.type === "custom-media") {
+			const condition = rule.value.query.mediaQueries[0]?.condition;
+			if (condition) {
+				customMediaMap.set(rule.value.name, condition);
+			}
+		}
 	}
+
+	const lookup = (name: string): MediaCondition | null => customMediaMap.get(name) ?? null;
+
 	return {
 		MediaQuery(query: MediaQuery): MediaQuery {
-			if (query?.condition?.type === "feature" && query.condition.value.name.startsWith("--")) {
-				const matchedConditionValue = query.condition.value;
-				let resolvedQuery = null;
-				for (const rule of ast.rules) {
-					if (rule.type === "custom-media" && rule.value.name === matchedConditionValue.name) {
-						resolvedQuery = rule.value.query.mediaQueries[0];
-						break;
-					}
-				}
-				if (resolvedQuery?.condition) {
-					query.condition = resolvedQuery.condition;
-				}
+			if (query?.condition) {
+				query.condition = resolveCondition(query.condition, lookup);
 			}
 			return query;
 		},
