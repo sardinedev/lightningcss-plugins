@@ -39,6 +39,7 @@
 		"types:export": "tsc -p tsconfig.export.json"
 	},
 	"devDependencies": {
+		"@sardine/lightningcss-plugin-utils": "*",
 		"@biomejs/biome": "2.4.4",
 		"@tsconfig/node-lts": "24.0.0",
 		"@tsconfig/strictest": "2.0.8",

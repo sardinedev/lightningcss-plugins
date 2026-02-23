@@ -1,3 +1,4 @@
+import { stripNullValues } from "@sardine/lightningcss-plugin-utils";
 import type { Declaration, MediaCondition, MediaQuery, StyleSheet } from "lightningcss";
 import { bundle } from "lightningcss";
 
@@ -79,7 +80,7 @@ export default ({ source }: Options) => {
 		if (rule.type === "custom-media") {
 			const condition = rule.value.query.mediaQueries[0]?.condition;
 			if (condition) {
-				customMediaMap.set(rule.value.name, condition);
+				customMediaMap.set(rule.value.name, stripNullValues(condition));
 			}
 		}
 	}

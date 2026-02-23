@@ -134,4 +134,33 @@ describe("globalCustomQueries", () => {
 		});
 		expect(code.toString()).toBe("@media print{.a{color:red}}");
 	});
+
+	it("should resolve multiple custom queries inside an AND compound condition", () => {
+		const { code } = runTransform("@media (--breakpoint) and (--large-breakpoint) { .a { color: red } }", {
+			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
+		});
+		expect(code.toString()).toBe("@media (width<=100em) and (width>=120em){.a{color:red}}");
+	});
+
+	it("should resolve a custom query inside an OR compound condition", () => {
+		const { code } = runTransform("@media (--breakpoint) or (color) { .a { color: red } }", {
+			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
+		});
+		const css = code.toString();
+		// Ensure the custom query was resolved and the OR structure is preserved.
+		expect(css).not.toContain("--breakpoint");
+		expect(css).toMatch(/width/);
+		expect(css).toMatch(/\bor\b/);
+		expect(css).toMatch(/\(color\)/);
+	});
+
+	it("should resolve a custom query inside a nested, negated compound condition", () => {
+		const { code } = runTransform("@media not ((--breakpoint) and (color)) { .a { color: red } }", {
+			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
+		});
+		const css = code.toString();
+		// Ensure the custom query was resolved within the nested, negated condition.
+		expect(css).not.toContain("--breakpoint");
+		expect(css).toMatch(/width/);
+	});
 });
