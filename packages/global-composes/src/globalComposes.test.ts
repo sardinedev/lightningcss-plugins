@@ -60,8 +60,6 @@ describe("customAtRules configuration", () => {
 
 describe("edge cases and regressions", () => {
 	it("should be a no-op when the composed class does not exist in the source", () => {
-		// Referencing an unknown class name must not throw — the @composes rule is
-		// silently consumed and any other declarations on the rule are preserved.
 		const { code } = runTransform(`.foo { @composes nonexistent; color: blue; }`, {
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
@@ -76,8 +74,6 @@ describe("edge cases and regressions", () => {
 	});
 
 	it("should compose declarations into rules with multiple selectors", () => {
-		// A selector list (.foo, .bar) is a single Rule — composition must apply
-		// to both selectors simultaneously.
 		const { code } = runTransform(`.foo, .bar { @composes bar; }`, {
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
@@ -93,10 +89,25 @@ describe("edge cases and regressions", () => {
 		expect(code.toString()).toBe(".foo{color:red;background-image:url(./image.svg)}");
 	});
 
+	it("should not crash when processing rules with var() and no @composes (lightningcss >=1.28 regression)", () => {
+		const { code } = runTransform(`.foo { color: var(--some-token); }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
+		});
+
+		expect(code.toString()).toBe(".foo{color:var(--some-token)}");
+	});
+
+	it("should not crash when a rule contains both @composes and var() (lightningcss >=1.28 regression)", () => {
+		// Use a different property (font-size) to avoid lightningcss optimizing away
+		// the composed "color: red" declaration when it would be shadowed by "color: var(...)".
+		const { code } = runTransform(`.foo { font-size: var(--size); @composes bar; }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
+		});
+
+		expect(code.toString()).toBe(".foo{color:red;font-size:var(--size)}");
+	});
+
 	it("should handle files with @import url() at the top level", () => {
-		// Reproduces an error with files that open with @import url()
-		// caused a lightningcss deserialisation error in lightningcss ≥1.30.2:
-		//   "failed to deserialize; expected an object-like struct named Specifier, found ()"
 		const source = `
 			@import url("./base.css");
 			.foo { @composes bar; }
@@ -106,19 +117,11 @@ describe("edge cases and regressions", () => {
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		// @import is not resolved by transform(), so it should be preserved as a
-		// plain string specifier (lightningcss drops the url() wrapper when minifying);
-		// the @composes substitution must still apply alongside it
 		expect(code.toString()).toContain('@import "./base.css"');
 		expect(code.toString()).toContain(".foo{color:red}");
 	});
 
 	it("should compose classes whose declarations contain var()", () => {
-		// Reproduces the core lightningcss >=1.30.2 bug where AST nodes captured via bundle()
-		// contain null fields (e.g. DashedIdentReference.from, Variable.fallback) that
-		// lightningcss cannot deserialise back when they are returned from a *different*
-		// visitor call during transform().
-		// See: https://github.com/parcel-bundler/lightningcss/issues/1081
 		const { code } = runTransform(`.foo { @composes bar-with-var; }`, {
 			visitor: composeVisitors([globalComposes({ source: mocks.composeWithVar })]),
 		});
@@ -127,8 +130,6 @@ describe("edge cases and regressions", () => {
 	});
 
 	it("should preserve !important declarations from the composed class", () => {
-		// DeclarationBlock has two arrays: `declarations` and `importantDeclarations`.
-		// The injection must copy both, otherwise !important properties are silently dropped.
 		const { code } = runTransform(`.foo { @composes important-bar; }`, {
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
@@ -137,8 +138,6 @@ describe("edge cases and regressions", () => {
 	});
 
 	it("should compose declarations when @composes is inside @media", () => {
-		// The Rule.style visitor is invoked recursively for style rules nested inside
-		// @media / @supports blocks — the substitution must still apply.
 		const { code } = runTransform(`@media (min-width: 600px) { .foo { @composes bar; } }`, {
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});

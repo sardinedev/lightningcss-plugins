@@ -47,6 +47,17 @@ interface CustomAtRuleValue {
 }
 
 /**
+ * Returns true if the given rule is an `@composes` at-rule, whether declared
+ * as an unknown at-rule (back-compat) or as a configured custom at-rule.
+ */
+function isComposesAtRule(child: Rule<Declaration>): boolean {
+	const isUnknownComposesRule = child.type === "unknown" && child.value.name === "composes";
+	const customValue = child.type === "custom" ? (child.value as unknown as CustomAtRuleValue) : null;
+	const isCustomComposesRule = customValue && customValue.name === "composes";
+	return isUnknownComposesRule || !!isCustomComposesRule;
+}
+
+/**
  * @param source The path to the file you want to extract the custom queries from
  * @returns A visitor that composes the global classes
  * @example
@@ -153,17 +164,23 @@ export default ({ source }: Options) => {
 	const classIndex = buildClassIndex(ast);
 	return {
 		Rule: {
-			style(rule: Rule<Declaration>): Rule<Declaration> {
-				if (rule.type === "style" && rule.value.rules) {
+			style(rule: Rule<Declaration>): Rule<Declaration> | undefined {
+				if (rule.type === "style" && rule.value.rules?.length) {
+					// Fast path: if there is no @composes child at all, avoid allocating a new
+					// array via filter. This is common in lightningcss >=1.28 where rules
+					// often have rule.value.rules = [].
+					const hasComposesChild = rule.value.rules.some((child) => isComposesAtRule(child));
+
+					if (!hasComposesChild) {
+						// No @composes children to process; keep the rule as-is and avoid
+						// triggering the filter allocation below.
+						return undefined;
+					}
+
+					let mutated = false;
 					rule.value.rules = rule.value.rules.filter((child) => {
-						// Support both custom (when customAtRules is configured) and unknown (fallback for back-compat)
-						const isComposesRule = child.type === "unknown" && child.value.name === "composes";
-
-						// For custom at-rules, we need to check the runtime value
-						const customValue = child.type === "custom" ? (child.value as unknown as CustomAtRuleValue) : null;
-						const isCustomComposesRule = customValue && customValue.name === "composes";
-
-						if (isComposesRule || isCustomComposesRule) {
+						if (isComposesAtRule(child)) {
+							mutated = true;
 							const names = extractClassNames(child);
 							for (const name of names) {
 								// Use prebuilt index for O(1) lookup instead of O(R) scan
@@ -188,9 +205,23 @@ export default ({ source }: Options) => {
 						}
 						return true;
 					});
+
+					// Only return the rule when it was actually mutated (i.e. a @composes rule
+					// was found and removed). Returning undefined tells lightningcss to keep the
+					// rule as-is, avoiding the null-field deserialisation error introduced in
+					// lightningcss >=1.28 where rule.value.rules is [] (truthy) even for rules
+					// with no nested children, causing every rule to be returned and triggering:
+					//   "failed to deserialize; expected an object-like struct named Specifier, found ()"
+					if (mutated) {
+						// Sanitize the mutated rule to strip null-valued keys so that
+						// lightningcss can safely deserialize the structure (see
+						// lightningcss >=1.28 null-field handling).
+						const sanitizedRule = stripNullValues(rule) as Rule<Declaration>;
+						return sanitizedRule;
+					}
 				}
 
-				return rule;
+				return undefined;
 			},
 		},
 	};
