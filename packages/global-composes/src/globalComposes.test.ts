@@ -1,169 +1,87 @@
 import path from "node:path";
+import type { CustomAtRules, TransformOptions } from "lightningcss";
 import { composeVisitors, transform } from "lightningcss";
 import { describe, expect, it } from "vitest";
 import globalComposes, { globalComposesCustomAtRules } from "./globalComposes";
 
+const mocks = {
+	compose: path.join(__dirname, "./mocks/compose.css"),
+	composeWithVar: path.join(__dirname, "./mocks/compose-with-var.css"),
+	stress: path.join(__dirname, "./mocks/stress.css"),
+};
+
+/** Run lightningcss transform with the common test defaults. */
+function runTransform<C extends CustomAtRules = CustomAtRules>(source: string, options: Partial<TransformOptions<C>>) {
+	return transform({
+		filename: "test.css",
+		minify: true,
+		code: new TextEncoder().encode(source),
+		...options,
+	});
+}
+
 describe("basic composition", () => {
 	it("should inject class properties", () => {
-		const source = `
-			.foo {
-				@composes bar;
-			}
-		`;
-
-		const result = ".foo{color:red}";
-
-		const mockPath = path.join(__dirname, "./mocks/compose.css");
-
-		const { code } = transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
+		const { code } = runTransform(`.foo { @composes bar; }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		expect(code.toString()).toBe(result);
+		expect(code.toString()).toBe(".foo{color:red}");
 	});
 
 	it("should inject class properties before existing properties", () => {
-		const source = `
-			.foo {
-				margin: 10px;
-				@composes bar;
-			}
-		`;
-
-		const result = ".foo{color:red;margin:10px}";
-
-		const mockPath = path.join(__dirname, "./mocks/compose.css");
-
-		const { code } = transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
+		const { code } = runTransform(`.foo { margin: 10px; @composes bar; }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		expect(code.toString()).toBe(result);
+		expect(code.toString()).toBe(".foo{color:red;margin:10px}");
 	});
 
 	it("should inject multiple class properties", () => {
-		const source = `
-			.foo {
-				@composes bar;
-				@composes small;
-			}
-		`;
-
-		const result = ".foo{color:red;font-size:12px}";
-
-		const mockPath = path.join(__dirname, "./mocks/compose.css");
-
-		const { code } = transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
+		const { code } = runTransform(`.foo { @composes bar; @composes small; }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		expect(code.toString()).toBe(result);
+		expect(code.toString()).toBe(".foo{color:red;font-size:12px}");
 	});
 });
 
 describe("customAtRules configuration", () => {
 	it("should work with customAtRules configuration", () => {
-		const source = `
-			.foo {
-				@composes bar;
-			}
-		`;
-
-		const result = ".foo{color:red}";
-
-		const mockPath = path.join(__dirname, "./mocks/compose.css");
-
-		const { code } = transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			customAtRules: {
-				...globalComposesCustomAtRules,
-			},
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
+		const { code } = runTransform(`.foo { @composes bar; }`, {
+			customAtRules: { ...globalComposesCustomAtRules },
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		expect(code.toString()).toBe(result);
+		expect(code.toString()).toBe(".foo{color:red}");
 	});
 
 	it("should not emit warnings about unknown at rule @composes", () => {
-		const source = `
-			.foo {
-				@composes bar;
-			}
-		`;
-
-		const mockPath = path.join(__dirname, "./mocks/compose.css");
-
-		const { warnings } = transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			customAtRules: {
-				...globalComposesCustomAtRules,
-			},
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
+		const { warnings } = runTransform(`.foo { @composes bar; }`, {
+			customAtRules: { ...globalComposesCustomAtRules },
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
 		expect(warnings).toHaveLength(0);
 	});
 
 	it("should inject multiple class properties with customAtRules", () => {
-		const source = `
-			.foo {
-				@composes bar;
-				@composes small;
-			}
-		`;
-
-		const result = ".foo{color:red;font-size:12px}";
-
-		const mockPath = path.join(__dirname, "./mocks/compose.css");
-
-		const { code } = transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			customAtRules: {
-				...globalComposesCustomAtRules,
-			},
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
+		const { code } = runTransform(`.foo { @composes bar; @composes small; }`, {
+			customAtRules: { ...globalComposesCustomAtRules },
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		expect(code.toString()).toBe(result);
+		expect(code.toString()).toBe(".foo{color:red;font-size:12px}");
 	});
 });
 
 describe("edge cases and regressions", () => {
 	it("should handle files with url function", () => {
-		const source = `
-			.foo {
-				background-image: url(./image.svg);
-				@composes bar;
-			}
-		`;
-
-		const result = ".foo{color:red;background-image:url(./image.svg)}";
-
-		const mockPath = path.join(__dirname, "./mocks/compose.css");
-
-		const { code } = transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
+		const { code } = runTransform(`.foo { background-image: url(./image.svg); @composes bar; }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		expect(code.toString()).toBe(result);
+		expect(code.toString()).toBe(".foo{color:red;background-image:url(./image.svg)}");
 	});
 
 	it("should handle files with @import url() at the top level", () => {
@@ -172,18 +90,11 @@ describe("edge cases and regressions", () => {
 		//   "failed to deserialize; expected an object-like struct named Specifier, found ()"
 		const source = `
 			@import url("./base.css");
-			.foo {
-				@composes bar;
-			}
+			.foo { @composes bar; }
 		`;
 
-		const mockPath = path.join(__dirname, "./mocks/compose.css");
-
-		const { code } = transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
+		const { code } = runTransform(source, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
 		// @import is not resolved by transform(), so it should be preserved;
@@ -197,19 +108,8 @@ describe("edge cases and regressions", () => {
 		// lightningcss cannot deserialise back when they are returned from a *different*
 		// visitor call during transform().
 		// See: https://github.com/parcel-bundler/lightningcss/issues/1081
-		const source = `
-			.foo {
-				@composes bar-with-var;
-			}
-		`;
-
-		const mockPath = path.join(__dirname, "./mocks/compose-with-var.css");
-
-		const { code } = transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
+		const { code } = runTransform(`.foo { @composes bar-with-var; }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.composeWithVar })]),
 		});
 
 		expect(code.toString()).toContain(".foo{color:var(--brand-color)}");
@@ -218,7 +118,6 @@ describe("edge cases and regressions", () => {
 
 describe("performance", () => {
 	it("should handle many classes efficiently (stress test)", () => {
-		// Create a source that composes many classes from a large global file
 		const source = `
 			.composed {
 				@composes class1;
@@ -230,18 +129,13 @@ describe("performance", () => {
 			}
 		`;
 
-		// Expected result should contain all composed class declarations (order may vary due to minification)
-		const result = ".composed{visibility:visible;cursor:pointer;grid-row:20;gap:30px;height:10px;margin:1px}";
-
-		const mockPath = path.join(__dirname, "./mocks/stress.css");
-
-		const { code } = transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
+		const { code } = runTransform(source, {
+			visitor: composeVisitors([globalComposes({ source: mocks.stress })]),
 		});
 
-		expect(code.toString()).toBe(result);
+		// Expected result should contain all composed class declarations (order may vary due to minification)
+		expect(code.toString()).toBe(
+			".composed{visibility:visible;cursor:pointer;grid-row:20;gap:30px;height:10px;margin:1px}",
+		);
 	});
 });
