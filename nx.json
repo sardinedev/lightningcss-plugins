@@ -7,21 +7,21 @@
 			"cache": true
 		},
 		"test": {
-			"dependsOn": ["^test"],
 			"outputs": ["{projectRoot}/coverage"],
 			"cache": true
 		},
 		"bench": {
-			"dependsOn": ["^bench"],
 			"cache": true
 		},
 		"lint": {
-			"dependsOn": ["^lint"],
 			"cache": true
 		},
 		"types:check": {
-			"dependsOn": ["^types:check"],
 			"cache": true
+		},
+		"@nx/vitest:test": {
+			"cache": true,
+			"inputs": ["default", "^default"]
 		}
 	},
 	"defaultBase": "main",
@@ -30,7 +30,6 @@
 			"plugin": "@nx/vite/plugin",
 			"options": {
 				"buildTargetName": "build",
-				"testTargetName": "test",
 				"serveTargetName": "serve",
 				"previewTargetName": "preview",
 				"serveStaticTargetName": "serve-static"
