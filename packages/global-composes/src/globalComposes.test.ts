@@ -125,6 +125,26 @@ describe("edge cases and regressions", () => {
 
 		expect(code.toString()).toContain(".foo{color:var(--brand-color)}");
 	});
+
+	it("should preserve !important declarations from the composed class", () => {
+		// DeclarationBlock has two arrays: `declarations` and `importantDeclarations`.
+		// The injection must copy both, otherwise !important properties are silently dropped.
+		const { code } = runTransform(`.foo { @composes important-bar; }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
+		});
+
+		expect(code.toString()).toBe(".foo{color:red!important}");
+	});
+
+	it("should compose declarations when @composes is inside @media", () => {
+		// The Rule.style visitor is invoked recursively for style rules nested inside
+		// @media / @supports blocks — the substitution must still apply.
+		const { code } = runTransform(`@media (min-width: 600px) { .foo { @composes bar; } }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
+		});
+
+		expect(code.toString()).toBe("@media (width>=600px){.foo{color:red}}");
+	});
 });
 
 describe("performance", () => {

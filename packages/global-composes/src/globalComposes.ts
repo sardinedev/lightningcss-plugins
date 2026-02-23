@@ -203,10 +203,20 @@ export default ({ source }: Options) => {
 							for (const name of names) {
 								// Use prebuilt index for O(1) lookup instead of O(R) scan
 								const declarations = classIndex.get(name);
-								if (declarations?.declarations && rule.value.declarations?.declarations) {
-									rule.value.declarations.declarations = declarations.declarations.concat(
-										rule.value.declarations?.declarations,
-									);
+								if (declarations && rule.value.declarations) {
+									// Prepend both normal and !important declarations from the source class.
+									// Both arrays must be copied — omitting importantDeclarations would
+									// silently drop any `!important` properties in the composed class.
+									if (declarations.declarations?.length) {
+										rule.value.declarations.declarations = declarations.declarations.concat(
+											rule.value.declarations.declarations ?? [],
+										);
+									}
+									if (declarations.importantDeclarations?.length) {
+										rule.value.declarations.importantDeclarations = declarations.importantDeclarations.concat(
+											rule.value.declarations.importantDeclarations ?? [],
+										);
+									}
 								}
 							}
 							return false;
