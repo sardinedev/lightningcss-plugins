@@ -1,1 +1,2 @@
 @custom-media --breakpoint (width <= 100em);
+@custom-media --large-breakpoint (width >= 120em);
