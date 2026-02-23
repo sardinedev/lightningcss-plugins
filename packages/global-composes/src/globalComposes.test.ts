@@ -165,3 +165,74 @@ it("should handle many classes efficiently (stress test)", () => {
 
 	expect(code.toString()).toBe(result);
 });
+
+it("should handle files with url function", () => {
+	const source = `
+		.foo {
+			background-image: url(./image.svg);
+			@composes bar;
+		}
+	`;
+
+	const result = ".foo{color:red;background-image:url(./image.svg)}";
+
+	const mockPath = path.join(__dirname, "./mocks/compose.css");
+
+	const { code } = transform({
+		filename: "test.css",
+		minify: true,
+		code: new TextEncoder().encode(source),
+		visitor: composeVisitors([globalComposes({ source: mockPath })]),
+	});
+
+	expect(code.toString()).toBe(result);
+});
+
+it("should handle files with @import url() at the top level", () => {
+	// Reproduces an error with files that open with @import url()
+	// caused a lightningcss deserialisation error in 1.31:
+	//   "failed to deserialize; expected an object-like struct named Specifier, found ()"
+	const source = `
+		@import url("./base.css");
+		.foo {
+			@composes bar;
+		}
+	`;
+
+	const mockPath = path.join(__dirname, "./mocks/compose.css");
+
+	const { code } = transform({
+		filename: "test.css",
+		minify: true,
+		code: new TextEncoder().encode(source),
+		visitor: composeVisitors([globalComposes({ source: mockPath })]),
+	});
+
+	// @import is not resolved by transform(), so it should be preserved;
+	// the @composes substitution must still apply
+	expect(code.toString()).toContain(".foo{color:red}");
+});
+
+it("should compose classes whose declarations contain var()", () => {
+	// Reproduces the core lightningcss >=1.30.2 bug where AST nodes captured via bundle()
+	// contain null fields (e.g. DashedIdentReference.from, Variable.fallback) that
+	// lightningcss cannot deserialise back when they are returned from a *different*
+	// visitor call during transform().
+	// See: https://github.com/parcel-bundler/lightningcss/issues/1081
+	const source = `
+		.foo {
+			@composes bar-with-var;
+		}
+	`;
+
+	const mockPath = path.join(__dirname, "./mocks/compose-with-var.css");
+
+	const { code } = transform({
+		filename: "test.css",
+		minify: true,
+		code: new TextEncoder().encode(source),
+		visitor: composeVisitors([globalComposes({ source: mockPath })]),
+	});
+
+	expect(code.toString()).toContain(".foo{color:var(--brand-color)}");
+});
