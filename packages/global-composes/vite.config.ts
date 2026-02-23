@@ -5,6 +5,7 @@ export default defineConfig({
 		coverage: {
 			reporter: ["lcovonly", "text-summary"],
 			include: ["src/**/*.ts"],
+			exclude: ["src/**/*.bench.ts"],
 		},
 		benchmark: {
 			include: ["src/**/*.bench.ts"],

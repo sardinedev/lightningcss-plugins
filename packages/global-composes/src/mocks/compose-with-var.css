@@ -1,0 +1,3 @@
+.bar-with-var {
+	color: var(--brand-color);
+}
