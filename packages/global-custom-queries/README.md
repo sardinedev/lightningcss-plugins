@@ -97,9 +97,9 @@ export default {
 
 | Input | Resolved |
 |-------|----------|
-| `@media (--breakpoint)` | ✅ Direct feature reference |
-| `@media not (--breakpoint)` | ✅ Negated condition |
-| `@media (--breakpoint) and (color)` | ✅ AND / OR compound condition |
-| `@media screen and (--breakpoint)` | ✅ Media type combined with custom feature |
-| `@media (--unknown)` | ⏭️ Left unchanged — name not found in source file |
-| `@media print` | ⏭️ Left unchanged — no custom feature present |
+| `@media (--breakpoint)` | Direct feature reference |
+| `@media not (--breakpoint)` | Negated condition |
+| `@media (--breakpoint) and (color)` | AND / OR compound condition |
+| `@media screen and (--breakpoint)` | Media type combined with custom feature |
+| `@media (--unknown)` | Left unchanged — name not found in source file |
+| `@media print` | Left unchanged — no custom feature present |
