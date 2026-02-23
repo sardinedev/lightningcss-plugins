@@ -90,6 +90,15 @@ describe("globalCustomQueries", () => {
 		expect(code.toString()).toBe("@media (width<=100em){.small{color:red}}@media (width>=120em){.large{color:#00f}}");
 	});
 
+	it("should resolve a custom query that is the sole condition alongside a media type", () => {
+		// mediaType (e.g. "screen") is stored separately from condition in the AST,
+		// so query.condition.type is still "feature" and the plugin resolves it.
+		const { code } = runTransform("@media screen and (--breakpoint) { .a { color: red } }", {
+			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
+		});
+		expect(code.toString()).toBe("@media screen and (width<=100em){.a{color:red}}");
+	});
+
 	it("should throw a branded error when the source file does not exist", () => {
 		const source = `
 			@media (--breakpoint) {
@@ -102,5 +111,41 @@ describe("globalCustomQueries", () => {
 				visitor: composeVisitors([globalCustomQueries({ source: missingFile })]),
 			}),
 		).toThrowError(BRANDED_ERROR_PREFIX);
+	});
+
+	it("passes through a plain media-type query unchanged", () => {
+		const { code } = runTransform("@media print { .a { color: red } }", {
+			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
+		});
+		expect(code.toString()).toBe("@media print{.a{color:red}}");
+	});
+});
+
+/**
+ * These tests document the current behaviour for query shapes the plugin does
+ * NOT attempt to resolve. They act as regression guards: if the plugin is
+ * extended to handle these cases the failing snapshots will signal that the
+ * change needs an explicit decision.
+ *
+ * Why the plugin cannot resolve them today:
+ *  - The `MediaQuery` visitor receives one `MediaQuery` object per query. It
+ *    only replaces when `query.condition.type === "feature"` (the whole
+ *    condition is a single, named feature).
+ *  - Negated queries  → `condition.type === "not"`   (wraps the feature)
+ *  - Compound queries → `condition.type === "operation"` (wraps N conditions)
+ */
+describe("edge cases – unresolved query shapes (regression guards)", () => {
+	it("does NOT resolve a negated custom query: @media not (--breakpoint)", () => {
+		const { code } = runTransform("@media not (--breakpoint) { .a { color: red } }", {
+			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
+		});
+		expect(code.toString()).toBe("@media not (--breakpoint){.a{color:red}}");
+	});
+
+	it("does NOT resolve a custom query inside an AND compound condition", () => {
+		const { code } = runTransform("@media (--breakpoint) and (color) { .a { color: red } }", {
+			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
+		});
+		expect(code.toString()).toBe("@media (--breakpoint) and (color){.a{color:red}}");
 	});
 });
