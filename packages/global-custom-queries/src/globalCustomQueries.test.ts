@@ -113,39 +113,54 @@ describe("globalCustomQueries", () => {
 		).toThrowError(BRANDED_ERROR_PREFIX);
 	});
 
+	it("should resolve a negated custom query", () => {
+		const { code } = runTransform("@media not (--breakpoint) { .a { color: red } }", {
+			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
+		});
+		// LightningCSS simplifies `not (width<=100em)` → `(width>100em)` when minifying
+		expect(code.toString()).toBe("@media (width>100em){.a{color:red}}");
+	});
+
+	it("should resolve a custom query inside an AND compound condition", () => {
+		const { code } = runTransform("@media (--breakpoint) and (color) { .a { color: red } }", {
+			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
+		});
+		expect(code.toString()).toBe("@media (width<=100em) and (color){.a{color:red}}");
+	});
+
 	it("passes through a plain media-type query unchanged", () => {
 		const { code } = runTransform("@media print { .a { color: red } }", {
 			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
 		});
 		expect(code.toString()).toBe("@media print{.a{color:red}}");
 	});
-});
 
-/**
- * These tests document the current behaviour for query shapes the plugin does
- * NOT attempt to resolve. They act as regression guards: if the plugin is
- * extended to handle these cases the failing snapshots will signal that the
- * change needs an explicit decision.
- *
- * Why the plugin cannot resolve them today:
- *  - The `MediaQuery` visitor receives one `MediaQuery` object per query. It
- *    only replaces when `query.condition.type === "feature"` (the whole
- *    condition is a single, named feature).
- *  - Negated queries  → `condition.type === "not"`   (wraps the feature)
- *  - Compound queries → `condition.type === "operation"` (wraps N conditions)
- */
-describe("edge cases – unresolved query shapes (regression guards)", () => {
-	it("does NOT resolve a negated custom query: @media not (--breakpoint)", () => {
-		const { code } = runTransform("@media not (--breakpoint) { .a { color: red } }", {
+	it("should resolve multiple custom queries inside an AND compound condition", () => {
+		const { code } = runTransform("@media (--breakpoint) and (--large-breakpoint) { .a { color: red } }", {
 			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
 		});
-		expect(code.toString()).toBe("@media not (--breakpoint){.a{color:red}}");
+		expect(code.toString()).toBe("@media (width<=100em) and (width>=120em){.a{color:red}}");
 	});
 
-	it("does NOT resolve a custom query inside an AND compound condition", () => {
-		const { code } = runTransform("@media (--breakpoint) and (color) { .a { color: red } }", {
+	it("should resolve a custom query inside an OR compound condition", () => {
+		const { code } = runTransform("@media (--breakpoint) or (color) { .a { color: red } }", {
 			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
 		});
-		expect(code.toString()).toBe("@media (--breakpoint) and (color){.a{color:red}}");
+		const css = code.toString();
+		// Ensure the custom query was resolved and the OR structure is preserved.
+		expect(css).not.toContain("--breakpoint");
+		expect(css).toMatch(/width/);
+		expect(css).toMatch(/\bor\b/);
+		expect(css).toMatch(/\(color\)/);
+	});
+
+	it("should resolve a custom query inside a nested, negated compound condition", () => {
+		const { code } = runTransform("@media not ((--breakpoint) and (color)) { .a { color: red } }", {
+			visitor: composeVisitors([globalCustomQueries({ source: customMediaFile })]),
+		});
+		const css = code.toString();
+		// Ensure the custom query was resolved within the nested, negated condition.
+		expect(css).not.toContain("--breakpoint");
+		expect(css).toMatch(/width/);
 	});
 });
