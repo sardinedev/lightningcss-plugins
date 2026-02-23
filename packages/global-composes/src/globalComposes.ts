@@ -154,7 +154,27 @@ export default ({ source }: Options) => {
 	return {
 		Rule: {
 			style(rule: Rule<Declaration>): Rule<Declaration> | undefined {
-				if (rule.type === "style" && rule.value.rules) {
+				if (rule.type === "style" && rule.value.rules?.length) {
+					// Fast path: if there is no @composes child at all, avoid allocating a new
+					// array via filter. This is common in lightningcss >=1.28 where rules
+					// often have rule.value.rules = [].
+					const hasComposesChild = rule.value.rules.some((child) => {
+						// Support both custom (when customAtRules is configured) and unknown (fallback for back-compat)
+						const isComposesRule = child.type === "unknown" && child.value.name === "composes";
+
+						// For custom at-rules, we need to check the runtime value
+						const customValue = child.type === "custom" ? (child.value as unknown as CustomAtRuleValue) : null;
+						const isCustomComposesRule = customValue && customValue.name === "composes";
+
+						return isComposesRule || !!isCustomComposesRule;
+					});
+
+					if (!hasComposesChild) {
+						// No @composes children to process; keep the rule as-is and avoid
+						// triggering the filter allocation below.
+						return undefined;
+					}
+
 					let mutated = false;
 					rule.value.rules = rule.value.rules.filter((child) => {
 						// Support both custom (when customAtRules is configured) and unknown (fallback for back-compat)
@@ -198,7 +218,11 @@ export default ({ source }: Options) => {
 					// with no nested children, causing every rule to be returned and triggering:
 					//   "failed to deserialize; expected an object-like struct named Specifier, found ()"
 					if (mutated) {
-						return rule;
+						// Sanitize the mutated rule to strip null-valued keys so that
+						// lightningcss can safely deserialize the structure (see
+						// lightningcss >=1.28 null-field handling).
+						const sanitizedRule = stripNullValues(rule) as Rule<Declaration>;
+						return sanitizedRule;
 					}
 				}
 

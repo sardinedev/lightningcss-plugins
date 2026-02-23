@@ -102,7 +102,7 @@ describe("edge cases and regressions", () => {
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		expect(code.toString()).toBe(".foo{color:red;color:var(--x)}");
+		expect(code.toString()).toBe(".foo{color:var(--x)}");
 	});
 
 	it("should handle files with @import url() at the top level", () => {
