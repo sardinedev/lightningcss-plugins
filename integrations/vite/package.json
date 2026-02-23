@@ -13,7 +13,9 @@
 	},
 	"devDependencies": {
 		"@preact/preset-vite": "^2.10.2",
+		"@sardinedev/url-composer": "workspace:*",
 		"@types/node": "^24.10.1",
+		"lightningcss": "1.31.1",
 		"typescript": "~5.9.3",
 		"vite": "^7.3.1"
 	}
