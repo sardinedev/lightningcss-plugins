@@ -125,15 +125,14 @@ function buildClassIndex(ast: StyleSheet<Declaration, MediaQuery>): Map<string, 
 	const classMap = new Map<string, DeclarationBlock<Declaration>>();
 	for (const rule of ast.rules) {
 		if (rule.type === "style" && rule.value.selectors && rule.value.declarations) {
+			// Sanitise once per rule, not once per class token — a compound selector like
+			// `.foo.bar` would otherwise deep-clone and strip the same declarations block
+			// multiple times, wasting work on large stylesheets.
+			const sanitized = stripNullValues(rule.value.declarations);
 			for (const selector of rule.value.selectors) {
 				for (const token of selector) {
 					if (token.type === "class") {
-						// Sanitise null-valued optional fields before caching.
-						// Captured AST nodes contain `null` for absent Rust `Option<T>` fields
-						// (e.g. DashedIdentReference.from, Variable.fallback), but lightningcss
-						// ≥1.30.2 expects those fields to be *absent*, not null, when the values
-						// are returned from a visitor — otherwise deserialisation fails.
-						classMap.set(token.name, stripNullValues(rule.value.declarations));
+						classMap.set(token.name, sanitized);
 					}
 				}
 			}
