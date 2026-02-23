@@ -98,16 +98,18 @@ describe("edge cases and regressions", () => {
 	});
 
 	it("should not crash when a rule contains both @composes and var() (lightningcss >=1.28 regression)", () => {
-		const { code } = runTransform(`.foo { color: var(--x); @composes bar; }`, {
+		// Use a different property (font-size) to avoid lightningcss optimizing away
+		// the composed "color: red" declaration when it would be shadowed by "color: var(...)".
+		const { code } = runTransform(`.foo { font-size: var(--size); @composes bar; }`, {
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		expect(code.toString()).toBe(".foo{color:var(--x)}");
+		expect(code.toString()).toBe(".foo{color:red;font-size:var(--size)}");
 	});
 
 	it("should handle files with @import url() at the top level", () => {
 		const source = `
-			@import url(\"./base.css\");
+			@import url("./base.css");
 			.foo { @composes bar; }
 		`;
 
