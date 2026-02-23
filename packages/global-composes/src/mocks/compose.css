@@ -5,3 +5,7 @@
 .small {
 	font-size: 12px;
 }
+
+.important-bar {
+	color: red !important;
+}
