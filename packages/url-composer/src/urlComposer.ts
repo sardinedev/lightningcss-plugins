@@ -23,7 +23,7 @@ export default (mappping: urlComposerOptions) => ({
 		for (const [key, value] of Object.entries(mappping)) {
 			const replacementKey = `\${${key}}`;
 			if (visitor.url.includes(replacementKey)) {
-				visitor.url = visitor.url.replace(replacementKey, value);
+				visitor.url = visitor.url.replaceAll(replacementKey, value);
 			}
 		}
 
