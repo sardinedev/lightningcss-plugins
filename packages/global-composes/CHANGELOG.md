@@ -1,5 +1,35 @@
 # @sardine/lightningcss-plugin-global-composes
 
+## 1.2.0
+
+### Minor Changes
+
+- 70f670b: Adds support for lightningcss@1.31.1
+
+### Patch Changes
+
+- 2d92e77: fix: Preserve `!important` declarations from composed classes
+
+  The lightningcss AST represents a declaration block with two separate arrays:
+  `declarations` (normal properties) and `importantDeclarations` (`!important` properties).
+
+  Previously, the injection code only copied the `declarations` array, so any `!important`
+  property in a composed class was silently dropped. Additionally, if a composed class
+  contained _only_ `!important` declarations, the injection guard would short-circuit and
+  the entire composition would be skipped — leaving the consuming rule completely unchanged
+  with no warning.
+
+  Both arrays are now copied when injecting composed declarations, preserving `!important`
+  priorities as authored.
+
+- 70f670b: Fix deserialization error with `var()` and `@import url()` in lightningcss ≥1.30.2.
+
+  lightningcss ≥1.30.2 changed how Rust `Option<T>` fields round-trip through JavaScript: absent optional fields must be missing keys, not `null`. The Rust serializer still emits `null` for those fields (e.g. `DashedIdentReference.from`, `Variable.fallback`), which caused a crash when declarations captured via `bundle()` were re-injected in a `transform()` visitor:
+
+  > `failed to deserialize; expected an object-like struct named Specifier, found ()`
+
+  This affected any source file using `var()`, CSS custom properties, or opening with `@import url()`. Fixed by stripping `null`-valued keys from captured AST nodes before caching them. See [lightningcss#1081](https://github.com/parcel-bundler/lightningcss/issues/1081).
+
 ## 1.1.0
 
 ### Minor Changes
