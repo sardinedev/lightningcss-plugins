@@ -93,6 +93,21 @@ describe("edge cases and regressions", () => {
 		expect(code.toString()).toBe(".foo{color:red;background-image:url(./image.svg)}");
 	});
 
+	it("should not crash when processing rules with var() and no @composes (lightningcss >=1.28 regression)", () => {
+		// In lightningcss >=1.28, rule.value.rules is [] (truthy) instead of undefined for
+		// rules without nested children. This caused the visitor to return every rule,
+		// including ones with var() tokens that serialize with null optional fields
+		// (e.g. DashedIdentReference.from = null). lightningcss >=1.28 fails to deserialise
+		// null back to Rust Option::None, producing:
+		//   "failed to deserialize; expected an object-like struct named Specifier, found ()"
+		// The fix: only return the rule when it was actually mutated by removing @composes.
+		const { code } = runTransform(`.foo { color: var(--some-token); }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
+		});
+
+		expect(code.toString()).toBe(".foo{color:var(--some-token)}");
+	});
+
 	it("should handle files with @import url() at the top level", () => {
 		// Reproduces an error with files that open with @import url()
 		// caused a lightningcss deserialisation error in lightningcss ≥1.30.2:

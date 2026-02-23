@@ -153,8 +153,9 @@ export default ({ source }: Options) => {
 	const classIndex = buildClassIndex(ast);
 	return {
 		Rule: {
-			style(rule: Rule<Declaration>): Rule<Declaration> {
+			style(rule: Rule<Declaration>): Rule<Declaration> | undefined {
 				if (rule.type === "style" && rule.value.rules) {
+					let mutated = false;
 					rule.value.rules = rule.value.rules.filter((child) => {
 						// Support both custom (when customAtRules is configured) and unknown (fallback for back-compat)
 						const isComposesRule = child.type === "unknown" && child.value.name === "composes";
@@ -164,6 +165,7 @@ export default ({ source }: Options) => {
 						const isCustomComposesRule = customValue && customValue.name === "composes";
 
 						if (isComposesRule || isCustomComposesRule) {
+							mutated = true;
 							const names = extractClassNames(child);
 							for (const name of names) {
 								// Use prebuilt index for O(1) lookup instead of O(R) scan
@@ -188,9 +190,19 @@ export default ({ source }: Options) => {
 						}
 						return true;
 					});
+
+					// Only return the rule when it was actually mutated (i.e. a @composes rule
+					// was found and removed). Returning undefined tells lightningcss to keep the
+					// rule as-is, avoiding the null-field deserialisation error introduced in
+					// lightningcss >=1.28 where rule.value.rules is [] (truthy) even for rules
+					// with no nested children, causing every rule to be returned and triggering:
+					//   "failed to deserialize; expected an object-like struct named Specifier, found ()"
+					if (mutated) {
+						return rule;
+					}
 				}
 
-				return rule;
+				return undefined;
 			},
 		},
 	};
