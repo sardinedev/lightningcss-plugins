@@ -95,7 +95,7 @@ describe("edge cases and regressions", () => {
 
 	it("should handle files with @import url() at the top level", () => {
 		// Reproduces an error with files that open with @import url()
-		// caused a lightningcss deserialisation error in 1.31:
+		// caused a lightningcss deserialisation error in lightningcss ≥1.30.2:
 		//   "failed to deserialize; expected an object-like struct named Specifier, found ()"
 		const source = `
 			@import url("./base.css");
