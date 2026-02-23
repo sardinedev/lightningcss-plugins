@@ -47,35 +47,44 @@ describe("basic composition", () => {
 });
 
 describe("customAtRules configuration", () => {
-	it("should work with customAtRules configuration", () => {
-		const { code } = runTransform(`.foo { @composes bar; }`, {
-			customAtRules: { ...globalComposesCustomAtRules },
-			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
-		});
-
-		expect(code.toString()).toBe(".foo{color:red}");
-	});
-
 	it("should not emit warnings about unknown at rule @composes", () => {
-		const { warnings } = runTransform(`.foo { @composes bar; }`, {
+		const { code, warnings } = runTransform(`.foo { @composes bar; }`, {
 			customAtRules: { ...globalComposesCustomAtRules },
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
 		expect(warnings).toHaveLength(0);
-	});
-
-	it("should inject multiple class properties with customAtRules", () => {
-		const { code } = runTransform(`.foo { @composes bar; @composes small; }`, {
-			customAtRules: { ...globalComposesCustomAtRules },
-			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
-		});
-
-		expect(code.toString()).toBe(".foo{color:red;font-size:12px}");
+		expect(code.toString()).toBe(".foo{color:red}");
 	});
 });
 
 describe("edge cases and regressions", () => {
+	it("should be a no-op when the composed class does not exist in the source", () => {
+		// Referencing an unknown class name must not throw — the @composes rule is
+		// silently consumed and any other declarations on the rule are preserved.
+		const { code } = runTransform(`.foo { @composes nonexistent; color: blue; }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
+		});
+
+		expect(code.toString()).toBe(".foo{color:#00f}");
+	});
+
+	it("should throw a descriptive error when the source file does not exist", () => {
+		expect(() => globalComposes({ source: "/nonexistent/path/missing.css" })).toThrow(
+			"[@sardine/lightningcss-plugin-global-composes]",
+		);
+	});
+
+	it("should compose declarations into rules with multiple selectors", () => {
+		// A selector list (.foo, .bar) is a single Rule — composition must apply
+		// to both selectors simultaneously.
+		const { code } = runTransform(`.foo, .bar { @composes bar; }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
+		});
+
+		expect(code.toString()).toBe(".foo,.bar{color:red}");
+	});
+
 	it("should handle files with url function", () => {
 		const { code } = runTransform(`.foo { background-image: url(./image.svg); @composes bar; }`, {
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
@@ -97,8 +106,10 @@ describe("edge cases and regressions", () => {
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		// @import is not resolved by transform(), so it should be preserved;
-		// the @composes substitution must still apply
+		// @import is not resolved by transform(), so it should be preserved as a
+		// plain string specifier (lightningcss drops the url() wrapper when minifying);
+		// the @composes substitution must still apply alongside it
+		expect(code.toString()).toContain('@import "./base.css"');
 		expect(code.toString()).toContain(".foo{color:red}");
 	});
 
@@ -133,7 +144,6 @@ describe("performance", () => {
 			visitor: composeVisitors([globalComposes({ source: mocks.stress })]),
 		});
 
-		// Expected result should contain all composed class declarations (order may vary due to minification)
 		expect(code.toString()).toBe(
 			".composed{visibility:visible;cursor:pointer;grid-row:20;gap:30px;height:10px;margin:1px}",
 		);
