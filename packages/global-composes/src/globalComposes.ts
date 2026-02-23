@@ -47,6 +47,17 @@ interface CustomAtRuleValue {
 }
 
 /**
+ * Returns true if the given rule is an `@composes` at-rule, whether declared
+ * as an unknown at-rule (back-compat) or as a configured custom at-rule.
+ */
+function isComposesAtRule(child: Rule<Declaration>): boolean {
+	const isUnknownComposesRule = child.type === "unknown" && child.value.name === "composes";
+	const customValue = child.type === "custom" ? (child.value as unknown as CustomAtRuleValue) : null;
+	const isCustomComposesRule = customValue && customValue.name === "composes";
+	return isUnknownComposesRule || !!isCustomComposesRule;
+}
+
+/**
  * @param source The path to the file you want to extract the custom queries from
  * @returns A visitor that composes the global classes
  * @example
@@ -158,16 +169,7 @@ export default ({ source }: Options) => {
 					// Fast path: if there is no @composes child at all, avoid allocating a new
 					// array via filter. This is common in lightningcss >=1.28 where rules
 					// often have rule.value.rules = [].
-					const hasComposesChild = rule.value.rules.some((child) => {
-						// Support both custom (when customAtRules is configured) and unknown (fallback for back-compat)
-						const isComposesRule = child.type === "unknown" && child.value.name === "composes";
-
-						// For custom at-rules, we need to check the runtime value
-						const customValue = child.type === "custom" ? (child.value as unknown as CustomAtRuleValue) : null;
-						const isCustomComposesRule = customValue && customValue.name === "composes";
-
-						return isComposesRule || !!isCustomComposesRule;
-					});
+					const hasComposesChild = rule.value.rules.some((child) => isComposesAtRule(child));
 
 					if (!hasComposesChild) {
 						// No @composes children to process; keep the rule as-is and avoid
@@ -177,14 +179,7 @@ export default ({ source }: Options) => {
 
 					let mutated = false;
 					rule.value.rules = rule.value.rules.filter((child) => {
-						// Support both custom (when customAtRules is configured) and unknown (fallback for back-compat)
-						const isComposesRule = child.type === "unknown" && child.value.name === "composes";
-
-						// For custom at-rules, we need to check the runtime value
-						const customValue = child.type === "custom" ? (child.value as unknown as CustomAtRuleValue) : null;
-						const isCustomComposesRule = customValue && customValue.name === "composes";
-
-						if (isComposesRule || isCustomComposesRule) {
+						if (isComposesAtRule(child)) {
 							mutated = true;
 							const names = extractClassNames(child);
 							for (const name of names) {
