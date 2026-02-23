@@ -108,12 +108,25 @@ describe("edge cases and regressions", () => {
 		expect(code.toString()).toBe(".foo{color:var(--some-token)}");
 	});
 
+	it("should not crash when a rule contains both @composes and var() (lightningcss >=1.28 regression)", () => {
+		// Even when a rule is mutated (i.e. @composes is found and removed), returning it
+		// without sanitization can still crash lightningcss >=1.28 if the rule's declarations
+		// contain var() tokens whose AST nodes carry null for optional Rust Option<T> fields
+		// (e.g. DashedIdentReference.from = null).
+		// The fix: strip null-valued keys from the mutated rule before returning it.
+		const { code } = runTransform(`.foo { color: var(--x); @composes bar; }`, {
+			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
+		});
+
+		expect(code.toString()).toBe(".foo{color:red;color:var(--x)}");
+	});
+
 	it("should handle files with @import url() at the top level", () => {
 		// Reproduces an error with files that open with @import url()
 		// caused a lightningcss deserialisation error in lightningcss ≥1.30.2:
 		//   "failed to deserialize; expected an object-like struct named Specifier, found ()"
 		const source = `
-			@import url("./base.css");
+			@import url(\"./base.css\");
 			.foo { @composes bar; }
 		`;
 
@@ -158,7 +171,7 @@ describe("edge cases and regressions", () => {
 			visitor: composeVisitors([globalComposes({ source: mocks.compose })]),
 		});
 
-		expect(code.toString()).toBe("@media (width>=600px){.foo{color:red}}");
+		expect(code.toString()).toBe("@media (width>=600px){.foo{color:red}});
 	});
 });
 
