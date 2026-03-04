@@ -1,0 +1,11 @@
+.root {
+	color: red;
+}
+
+.icon {
+	font-size: 12px;
+}
+
+.kebab-case {
+	display: flex;
+}

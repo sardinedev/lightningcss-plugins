@@ -1,0 +1,7 @@
+.header {
+	background: url(./image.png);
+}
+
+.footer {
+	color: var(--brand-color);
+}
