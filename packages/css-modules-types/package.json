@@ -1,0 +1,53 @@
+{
+	"name": "@sardine/lightningcss-plugin-css-modules-types",
+	"version": "0.1.0",
+	"description": "A LightningCSS plugin to generate TypeScript types for CSS Modules files",
+	"keywords": [
+		"lightningcss-plugin",
+		"css-modules",
+		"typescript"
+	],
+	"type": "module",
+	"module": "dist/cssModulesTypes.js",
+	"types": "./dist/cssModulesTypes.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/cssModulesTypes.d.ts",
+			"import": "./dist/cssModulesTypes.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sardinedev/lightningcss-plugins.git"
+	},
+	"author": "Hugo Nogueira <hnogueira@marabyte.com>",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/sardinedev/lightningcss-plugins/issues"
+	},
+	"homepage": "https://github.com/sardinedev/lightningcss-plugins#readme",
+	"scripts": {
+		"build": "vite build",
+		"test": "vitest run --coverage",
+		"lint": "biome check --write ./src",
+		"types:check": "tsc -p tsconfig.json",
+		"types:export": "tsc -p tsconfig.export.json"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.5",
+		"@tsconfig/node-lts": "24.0.0",
+		"@tsconfig/strictest": "2.0.8",
+		"@types/node": "24.11.0",
+		"@vitest/coverage-v8": "4.0.18",
+		"lightningcss": "1.31.1",
+		"typescript": "5.9.3",
+		"vite": "7.3.1",
+		"vitest": "4.0.18"
+	}
+}
