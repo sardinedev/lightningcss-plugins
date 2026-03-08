@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { composeVisitors, transform } from "lightningcss";
 import { afterEach, describe, expect, it } from "vitest";
