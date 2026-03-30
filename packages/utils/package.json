@@ -12,7 +12,7 @@
 		"types:check": "tsc -p tsconfig.json"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.7",
+		"@biomejs/biome": "2.4.10",
 		"@tsconfig/node-lts": "24.0.0",
 		"@tsconfig/strictest": "2.0.8",
 		"@vitest/coverage-v8": "4.1.0",
