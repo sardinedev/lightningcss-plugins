@@ -1,0 +1,9 @@
+{
+	"extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node-lts/tsconfig.json"],
+	"exclude": ["./dist"],
+	"compilerOptions": {
+		"module": "ES2022",
+		"moduleResolution": "bundler",
+		"noEmit": true
+	}
+}

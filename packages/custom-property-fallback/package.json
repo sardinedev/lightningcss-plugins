@@ -1,0 +1,53 @@
+{
+	"name": "@sardine/lightningcss-plugin-custom-property-fallback",
+	"version": "0.1.0",
+	"description": "A LightningCSS plugin to provide custom property fallbacks",
+	"keywords": [
+		"lightningcss-plugin"
+	],
+	"type": "module",
+	"module": "dist/customPropertyFallback.js",
+	"types": "./dist/customPropertyFallback.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/customPropertyFallback.d.ts",
+			"import": "./dist/customPropertyFallback.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sardinedev/lightningcss-plugins.git"
+	},
+	"author": "Hugo Nogueira <hnogueira@marabyte.com>",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/sardinedev/lightningcss-plugins/issues"
+	},
+	"homepage": "https://github.com/sardinedev/lightningcss-plugins#readme",
+	"scripts": {
+		"build": "vite build",
+		"test": "vitest run --coverage",
+		"bench": "vitest bench --run",
+		"lint": "biome check --write ./src",
+		"types:check": "tsc -p tsconfig.json",
+		"types:export": "tsc -p tsconfig.export.json"
+	},
+	"devDependencies": {
+		"@sardine/lightningcss-plugin-utils": "*",
+		"@biomejs/biome": "2.5.0",
+		"@tsconfig/node-lts": "24.0.0",
+		"@tsconfig/strictest": "2.0.8",
+		"@types/node": "24.13.3",
+		"@vitest/coverage-v8": "4.1.10",
+		"lightningcss": "1.32.0",
+		"typescript": "5.9.3",
+		"vite": "8.1.5",
+		"vitest": "4.1.10"
+	}
+}
