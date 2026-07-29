@@ -1,0 +1,11 @@
+:root {
+	--space-sm: 8px;
+	--space-md: 16px;
+	--card-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+	--content-spacing: var(--space-sm) 24px;
+	--duplicate: 1px;
+}
+
+.theme {
+	--duplicate: 2px;
+}
