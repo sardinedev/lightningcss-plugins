@@ -4,6 +4,7 @@
 	"include": ["./src"],
 	"exclude": ["./src/**/*.test.ts"],
 	"compilerOptions": {
+		"rootDir": "./src",
 		"noEmit": false,
 		"declaration": true,
 		"declarationDir": "./dist",
