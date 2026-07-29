@@ -15,9 +15,9 @@ export default defineConfig({
 		minify: false,
 		target: "node20",
 		lib: {
-			entry: resolve(__dirname, "src/globalComposes.ts"),
+			entry: resolve(__dirname, "src/customPropertyFallback.ts"),
 			formats: ["es"],
-			fileName: "globalComposes",
+			fileName: "customPropertyFallback",
 		},
 		rollupOptions: {
 			// make sure to externalize deps that shouldn't be bundled
