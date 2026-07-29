@@ -1,0 +1,55 @@
+{
+	"name": "@sardine/lightningcss-plugin-source",
+	"version": "0.0.0",
+	"description": "A shared CSS source parser for Lightning CSS plugins",
+	"keywords": [
+		"lightningcss-plugin"
+	],
+	"type": "module",
+	"module": "dist/source.js",
+	"types": "./dist/source.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/source.d.ts",
+			"import": "./dist/source.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sardinedev/lightningcss-plugins.git"
+	},
+	"author": "Hugo Nogueira <hnogueira@marabyte.com>",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/sardinedev/lightningcss-plugins/issues"
+	},
+	"homepage": "https://github.com/sardinedev/lightningcss-plugins#readme",
+	"scripts": {
+		"build": "vite build",
+		"test": "vitest run --coverage",
+		"lint": "biome check --write ./src",
+		"types:check": "tsc -p tsconfig.json",
+		"types:export": "tsc -p tsconfig.export.json"
+	},
+	"peerDependencies": {
+		"lightningcss": ">=1.32.0"
+	},
+	"devDependencies": {
+		"@sardine/lightningcss-plugin-utils": "*",
+		"@biomejs/biome": "2.5.0",
+		"@tsconfig/node-lts": "24.0.0",
+		"@tsconfig/strictest": "2.0.8",
+		"@types/node": "24.13.3",
+		"@vitest/coverage-v8": "4.1.10",
+		"lightningcss": "1.32.0",
+		"typescript": "5.9.3",
+		"vite": "8.1.5",
+		"vitest": "4.1.10"
+	}
+}
