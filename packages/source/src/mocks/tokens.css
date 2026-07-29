@@ -1,0 +1,10 @@
+@custom-media --narrow (width <= 40rem);
+
+:root {
+	--space-md: 16px;
+	--duplicate: 1px;
+}
+
+.theme {
+	--duplicate: 2px;
+}
