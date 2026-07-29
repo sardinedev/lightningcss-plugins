@@ -52,6 +52,30 @@ const { code } = transform({
 });
 ```
 
+### Share a source with other plugins
+
+When multiple plugins read the same CSS file, create one parsed source handle and pass it to each plugin:
+
+```bash
+npm install --save-dev @sardine/lightningcss-plugin-source
+```
+
+```ts
+import { createCssSource } from "@sardine/lightningcss-plugin-source";
+import customPropertyFallback from "@sardine/lightningcss-plugin-custom-property-fallback";
+import globalCustomQueries from "@sardine/lightningcss-plugin-global-custom-queries";
+import { composeVisitors } from "lightningcss";
+
+const source = createCssSource("./src/tokens.css");
+
+const visitor = composeVisitors([
+	globalCustomQueries({ source }),
+	customPropertyFallback({ source }),
+]);
+```
+
+The file is read and parsed once. Each plugin reuses the relevant index from the handle.
+
 ### With Vite
 
 ```ts
@@ -75,7 +99,7 @@ export default defineConfig({
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `source` | `string` | Path to the CSS file containing custom property values. |
+| `source` | `string \| CustomPropertySource` | CSS file path or a shared source handle containing custom property values. |
 
 ## Behavior
 

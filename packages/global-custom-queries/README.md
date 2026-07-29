@@ -68,6 +68,30 @@ const { code } = transform({
 });
 ```
 
+### Share a source with other plugins
+
+Use `createCssSource` when this plugin and another Lightning CSS plugin read the same file:
+
+```bash
+npm install --save-dev @sardine/lightningcss-plugin-source
+```
+
+```ts
+import { createCssSource } from "@sardine/lightningcss-plugin-source";
+import customPropertyFallback from "@sardine/lightningcss-plugin-custom-property-fallback";
+import globalCustomQueries from "@sardine/lightningcss-plugin-global-custom-queries";
+import { composeVisitors } from "lightningcss";
+
+const source = createCssSource("./src/tokens.css");
+
+const visitor = composeVisitors([
+  globalCustomQueries({ source }),
+  customPropertyFallback({ source }),
+]);
+```
+
+Both plugins reuse the indexes created by one filesystem read and one parse.
+
 ### With a bundler (e.g. Vite)
 
 ```ts
@@ -91,7 +115,7 @@ export default {
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `source` | `string` | Path to the CSS file containing the `@custom-media` definitions to resolve from. |
+| `source` | `string \| CustomMediaSource` | CSS file path or a shared source handle containing custom media queries. |
 
 ## Supported query shapes
 
