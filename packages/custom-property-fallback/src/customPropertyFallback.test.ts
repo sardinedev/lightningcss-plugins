@@ -1,7 +1,11 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import type { CustomAtRules, TransformOptions } from "lightningcss";
 import { composeVisitors, transform } from "lightningcss";
 import { describe, expect, it } from "vitest";
+import globalCustomQueries from "../../global-custom-queries/src/globalCustomQueries";
+import { createCssSource } from "../../source/src/source";
 import customPropertyFallback from "./customPropertyFallback";
 
 const tokens = path.join(__dirname, "./mocks/tokens.css");
@@ -25,6 +29,34 @@ describe("adds fallback values for custom properties", () => {
 		});
 
 		expect(code.toString()).toBe(".foo{margin-right:var(--space-md,16px)}");
+	});
+
+	it("reuses a shared source handle", () => {
+		const source = createCssSource(tokens);
+		const { code } = runTransform(`.foo { margin-right: var(--space-md); }`, {
+			visitor: composeVisitors([customPropertyFallback({ source })]),
+		});
+
+		expect(code.toString()).toBe(".foo{margin-right:var(--space-md,16px)}");
+	});
+
+	it("shares one parsed source with another plugin", () => {
+		const directory = mkdtempSync(path.join(tmpdir(), "lightningcss-plugin-source-"));
+		const filename = path.join(directory, "tokens.css");
+
+		try {
+			writeFileSync(filename, "@custom-media --narrow (width <= 40rem); :root { --space-md: 16px; }");
+			const source = createCssSource(filename);
+			rmSync(filename);
+
+			const { code } = runTransform("@media (--narrow) { .foo { margin: var(--space-md); } }", {
+				visitor: composeVisitors([globalCustomQueries({ source }), customPropertyFallback({ source })]),
+			});
+
+			expect(code.toString()).toBe("@media (width<=40rem){.foo{margin:var(--space-md,16px)}}");
+		} finally {
+			rmSync(directory, { recursive: true, force: true });
+		}
 	});
 
 	it("adds fallbacks to multiple variables", () => {

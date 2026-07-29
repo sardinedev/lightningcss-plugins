@@ -2,19 +2,23 @@ import { stripNullValues } from "@sardine/lightningcss-plugin-utils";
 import type { CustomProperty, TokenOrValue, Variable } from "lightningcss";
 import { bundle } from "lightningcss";
 
+export interface CustomPropertySource {
+	readonly customProperties: ReadonlyMap<string, TokenOrValue[]>;
+}
+
 export type Options = {
-	/** The path to the CSS file containing custom property fallback values. */
-	source: string;
+	/** A CSS source path or a shared source handle containing custom property fallback values. */
+	source: string | CustomPropertySource;
 };
 
 const ERROR_PREFIX = "[@sardine/lightningcss-plugin-custom-property-fallback]:";
 
-/**
- * Build an index of custom property names to their fallback values from the source CSS file.
- */
-function buildCustomPropertyIndex(source: string): Map<string, TokenOrValue[]> {
-	const customProperties = new Map<string, TokenOrValue[]>();
+function getCustomProperties(source: string | CustomPropertySource): ReadonlyMap<string, TokenOrValue[]> {
+	if (typeof source !== "string") {
+		return source.customProperties;
+	}
 
+	const customProperties = new Map<string, TokenOrValue[]>();
 	try {
 		bundle({
 			filename: source,
@@ -37,7 +41,7 @@ function buildCustomPropertyIndex(source: string): Map<string, TokenOrValue[]> {
  * Add source custom property values as fallbacks to matching `var()` references.
  */
 export default ({ source }: Options) => {
-	const customProperties = buildCustomPropertyIndex(source);
+	const customProperties = getCustomProperties(source);
 
 	return {
 		VariableExit(variable: Variable): TokenOrValue | undefined {

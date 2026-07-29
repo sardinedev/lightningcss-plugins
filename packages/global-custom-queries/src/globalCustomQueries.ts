@@ -2,9 +2,13 @@ import { stripNullValues } from "@sardine/lightningcss-plugin-utils";
 import type { Declaration, MediaCondition, MediaQuery, StyleSheet } from "lightningcss";
 import { bundle } from "lightningcss";
 
+export interface CustomMediaSource {
+	readonly customMedia: ReadonlyMap<string, MediaCondition>;
+}
+
 export type Options = {
-	/* The path to the file you want to extract the custom queries from */
-	source: string;
+	/** A CSS source path or a shared source handle containing custom media queries. */
+	source: string | CustomMediaSource;
 };
 
 function returnAST(source: string): StyleSheet<Declaration, MediaQuery> {
@@ -72,17 +76,21 @@ function resolveCondition(condition: MediaCondition, lookup: (name: string) => M
  * );
  */
 export default ({ source }: Options) => {
-	const ast = returnAST(source);
-
-	/** Index of `@custom-media` rule name → resolved condition, built once at setup. */
-	const customMediaMap = new Map<string, MediaCondition>();
-	for (const rule of ast.rules) {
-		if (rule.type === "custom-media") {
-			const condition = rule.value.query.mediaQueries[0]?.condition;
-			if (condition) {
-				customMediaMap.set(rule.value.name, stripNullValues(condition));
+	let customMediaMap: ReadonlyMap<string, MediaCondition>;
+	if (typeof source === "string") {
+		const ast = returnAST(source);
+		const index = new Map<string, MediaCondition>();
+		for (const rule of ast.rules) {
+			if (rule.type === "custom-media") {
+				const condition = rule.value.query.mediaQueries[0]?.condition;
+				if (condition) {
+					index.set(rule.value.name, stripNullValues(condition));
+				}
 			}
 		}
+		customMediaMap = index;
+	} else {
+		customMediaMap = source.customMedia;
 	}
 
 	const lookup = (name: string): MediaCondition | null => customMediaMap.get(name) ?? null;
