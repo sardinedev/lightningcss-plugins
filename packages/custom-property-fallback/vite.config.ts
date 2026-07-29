@@ -7,9 +7,6 @@ export default defineConfig({
 			include: ["src/**/*.ts"],
 			exclude: ["src/**/*.bench.ts"],
 		},
-		benchmark: {
-			include: ["src/**/*.bench.ts"],
-		},
 	},
 	build: {
 		minify: false,
