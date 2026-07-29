@@ -1,6 +1,6 @@
 {
 	"name": "@sardine/lightningcss-plugin-custom-property-fallback",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "A LightningCSS plugin to provide custom property fallbacks",
 	"keywords": [
 		"lightningcss-plugin"

@@ -1,6 +1,6 @@
 {
 	"name": "@sardine/lightningcss-plugin-source",
-	"version": "0.0.0",
+	"version": "1.0.0",
 	"description": "A shared CSS source parser for Lightning CSS plugins",
 	"keywords": [
 		"lightningcss-plugin"
