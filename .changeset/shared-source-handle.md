@@ -1,5 +1,5 @@
 ---
-"@sardine/lightningcss-plugin-source": minor
+"@sardine/lightningcss-plugin-source": major
 "@sardine/lightningcss-plugin-custom-property-fallback": minor
 "@sardine/lightningcss-plugin-global-custom-queries": minor
 ---
