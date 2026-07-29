@@ -32,6 +32,15 @@ describe("globalCustomQueries", () => {
 		expect(code.toString()).toBe("@media (width<=100em){.foo{color:red}}");
 	});
 
+	it("accepts a shared source handle", () => {
+		const source = { customMedia: new Map() };
+		const { code } = runTransform("@media (--unknown) { .foo { color: red; } }", {
+			visitor: composeVisitors([globalCustomQueries({ source })]),
+		});
+
+		expect(code.toString()).toBe("@media (--unknown){.foo{color:red}}");
+	});
+
 	it("should leave an unknown custom media query unchanged", () => {
 		const source = `
 			@media (--small-breakpoint) {
