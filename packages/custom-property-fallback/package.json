@@ -46,7 +46,7 @@
 		"@vitest/coverage-v8": "4.1.11",
 		"lightningcss": "1.33.0",
 		"typescript": "7.0.2",
-		"vite": "8.2.1",
+		"vite": "8.2.2",
 		"vitest": "4.1.11"
 	}
 }
