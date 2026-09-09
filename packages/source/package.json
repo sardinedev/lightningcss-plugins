@@ -43,7 +43,7 @@
 	"devDependencies": {
 		"@sardine/lightningcss-plugin-utils": "*",
 		"@biomejs/biome": "2.5.0",
-		"@tsconfig/node-lts": "24.0.0",
+		"@tsconfig/node-lts": "24.0.1",
 		"@tsconfig/strictest": "2.0.8",
 		"@types/node": "24.13.3",
 		"@vitest/coverage-v8": "4.1.11",
