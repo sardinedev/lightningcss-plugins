@@ -9,3 +9,11 @@
 .important-bar {
 	color: red !important;
 }
+
+.blue {
+	color: blue;
+}
+
+.important-blue {
+	color: blue !important;
+}

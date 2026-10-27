@@ -1,11 +1,56 @@
+import console from "node:console";
 import path from "node:path";
 import { composeVisitors, transform } from "lightningcss";
-import { bench, describe } from "vitest";
+import { bench, describe, vi } from "vitest";
 import globalComposes, { globalComposesCustomAtRules } from "./globalComposes";
 
 describe("globalComposes performance", () => {
 	const mockPath = path.join(__dirname, "./mocks/compose.css");
 	const stressPath = path.join(__dirname, "./mocks/stress.css");
+
+	// Compare resolved and unresolved names over the same input so the cost of
+	// reporting an unresolved name is visible on its own. Console output is
+	// silenced so terminal I/O does not dominate the measurement.
+	vi.spyOn(console, "warn").mockImplementation(() => {});
+	const manyRulesVisitor = globalComposes({ source: mockPath });
+	const manyRules = (name: string) =>
+		new TextEncoder().encode(
+			Array.from({ length: 2000 }, (_, index) => `.component-${index} { @composes ${name}; }`).join("\n"),
+		);
+	const manyResolvedRules = manyRules("bar");
+	const manyUnresolvedRules = manyRules("missing");
+
+	bench("2000 selectors composing a resolved class", () => {
+		transform({
+			filename: "test.css",
+			minify: true,
+			code: manyResolvedRules,
+			customAtRules: globalComposesCustomAtRules,
+			visitor: manyRulesVisitor,
+		});
+	});
+
+	bench("2000 selectors composing an unresolved class", () => {
+		transform({
+			filename: "test.css",
+			minify: true,
+			code: manyUnresolvedRules,
+			customAtRules: globalComposesCustomAtRules,
+			visitor: manyRulesVisitor,
+		});
+	});
+
+	bench("compose classes from multiple source files", () => {
+		transform({
+			filename: "test.css",
+			minify: true,
+			code: new TextEncoder().encode(".foo { @composes small overlay; }"),
+			customAtRules: globalComposesCustomAtRules,
+			visitor: globalComposes({
+				source: [mockPath, path.join(__dirname, "./mocks/compose-overlay.css")],
+			}),
+		});
+	});
 
 	bench("single @composes from small file", () => {
 		const source = `

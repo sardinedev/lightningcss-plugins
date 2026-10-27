@@ -21,7 +21,7 @@ export default defineConfig({
 		},
 		rollupOptions: {
 			// make sure to externalize deps that shouldn't be bundled
-			external: ["lightningcss", "node:path"],
+			external: ["lightningcss", "@sardine/lightningcss-plugin-source", "node:path", "node:console"],
 		},
 	},
 });

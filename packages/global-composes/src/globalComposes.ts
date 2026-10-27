@@ -1,10 +1,36 @@
+import console from "node:console";
+import { type CssSource, type CssSourceInput, resolveCssSource } from "@sardine/lightningcss-plugin-source";
 import { stripNullValues } from "@sardine/lightningcss-plugin-utils";
-import type { CustomAtRules, Declaration, DeclarationBlock, MediaQuery, Rule, StyleSheet } from "lightningcss";
-import { bundle } from "lightningcss";
+import type { CustomAtRules, Declaration, DeclarationBlock, Location2, Rule } from "lightningcss";
+import { formatSelectors } from "./formatSelectors";
 
-type Options = {
-	/* The path to the file you want to extract the global classes from */
-	source: string;
+/** A composed class name that was not found in any source. */
+export interface UnresolvedClass {
+	/** The class name listed in `@composes`. */
+	readonly name: string;
+	/**
+	 * Selectors of the rule containing the `@composes` at-rule, printed from the parsed
+	 * selector with Lightning CSS's unminified formatting. Built when first read.
+	 */
+	readonly selector: string;
+	/**
+	 * Location of that rule as reported by Lightning CSS: `line` starts at 0 and `column` at 1.
+	 * `source_index` is the file's position in the bundle's source map `sources` (0 is the entry file).
+	 */
+	readonly loc: Location2;
+}
+
+export type Options = {
+	/**
+	 * CSS source paths or shared source handles from `createCssSource` containing global classes.
+	 * Later sources override duplicate classes.
+	 */
+	source: CssSourceInput | readonly CssSourceInput[];
+	/**
+	 * Called once per unresolved class name per consuming rule. Defaults to `console.warn`.
+	 * Throw from the callback to fail the transform.
+	 */
+	onUnresolved?: (unresolved: UnresolvedClass) => void;
 };
 
 /**
@@ -58,63 +84,27 @@ function isComposesAtRule(child: Rule<Declaration>): boolean {
 }
 
 /**
- * @param source The path to the file you want to extract the custom queries from
- * @returns A visitor that composes the global classes
- * @example
- * const res = transform({
- * minify: true,
- * code: Buffer.from(".foo{@composes bar}"),
- * visitor: composeVisitors([globalComposes({ source: "./global.css" })]),
- * });
- *
- * assert.strictEqual(
- * res.code.toString(),
- * ".foo{color:red}",
- * new TypeError("Replaced URL is not the same")
- * );
+ * Resolve a source path or handle, reporting failures under this plugin's name.
+ * Path errors name the failing file; handles must carry a `classes` index.
  */
-function returnAST(source: string): StyleSheet<Declaration, MediaQuery> | null {
-	let ast: StyleSheet<Declaration, MediaQuery> | null = null;
+function resolveSource(entry: CssSourceInput): CssSource {
+	let resolved: CssSource | undefined;
 	try {
-		bundle({
-			filename: source,
-			drafts: {
-				customMedia: true,
-			},
-			visitor: {
-				StyleSheet(stylesheet) {
-					ast = stylesheet;
-				},
-			},
-		});
-		return ast;
+		resolved = resolveCssSource(entry);
 	} catch (error) {
-		throw Error(`[@sardine/lightningcss-plugin-global-composes]: ${(error as Error).message}`);
+		// createCssSource keeps the Lightning CSS error as its cause; keep it here too so
+		// callers can read its `fileName` and `loc`.
+		const cause = ((error as Error).cause ?? error) as Error;
+		throw Error(`[@sardine/lightningcss-plugin-global-composes]: Failed to load "${entry}": ${cause.message}`, {
+			cause,
+		});
 	}
-}
-
-/**
- * Build an index mapping class names to their declaration blocks.
- * This performs a single AST walk to enable O(1) lookups instead of O(R) scans.
- */
-function buildClassIndex(ast: StyleSheet<Declaration, MediaQuery>): Map<string, DeclarationBlock<Declaration>> {
-	const classMap = new Map<string, DeclarationBlock<Declaration>>();
-	for (const rule of ast.rules) {
-		if (rule.type === "style" && rule.value.selectors && rule.value.declarations) {
-			// Sanitise once per rule, not once per class token — a compound selector like
-			// `.foo.bar` would otherwise deep-clone and strip the same declarations block
-			// multiple times, wasting work on large stylesheets.
-			const sanitized = stripNullValues(rule.value.declarations);
-			for (const selector of rule.value.selectors) {
-				for (const token of selector) {
-					if (token.type === "class") {
-						classMap.set(token.name, sanitized);
-					}
-				}
-			}
-		}
+	if (!(resolved?.classes instanceof Map)) {
+		throw Error(
+			'[@sardine/lightningcss-plugin-global-composes]: Invalid source: expected a CSS file path or a handle from createCssSource() with a "classes" index. Handles from @sardine/lightningcss-plugin-source 1.x have no "classes"; upgrade it to ^2.0.0.',
+		);
 	}
-	return classMap;
+	return resolved;
 }
 
 /**
@@ -155,13 +145,45 @@ function extractClassNames(child: Rule<Declaration>): string[] {
 	return names;
 }
 
-export default ({ source }: Options) => {
-	const ast = returnAST(source);
-	if (!ast) {
-		throw Error(`[@sardine/lightningcss-plugin-global-composes]: The file "${source}" does not contain valid CSS.`);
-	}
+/** Default `onUnresolved` handler: warn with the class name, consuming selector and its position. */
+function warnUnresolved({ name, selector, loc }: UnresolvedClass): void {
+	// Positions in files imported by `bundle()` need the file index to be found.
+	const file = loc.source_index === 0 ? "" : ` of bundled file ${loc.source_index}`;
+	console.warn(
+		`[@sardine/lightningcss-plugin-global-composes]: class ${JSON.stringify(name)} not found in source (composed in "${selector}" at line ${loc.line + 1}, column ${loc.column}${file})`,
+	);
+}
+
+function isSourceList(source: Options["source"]): source is readonly CssSourceInput[] {
+	return Array.isArray(source);
+}
+
+/**
+ * Compose global class declarations from one or more CSS sources.
+ * Later sources replace earlier definitions of the same class, including `!important` declarations.
+ * Within a rule, later composed names take precedence over earlier ones.
+ * Unresolved names are passed to `onUnresolved`, which warns with the consuming selector and its location by default.
+ *
+ * @param options - CSS source paths or shared source handles to index once when creating the visitor.
+ * @returns A Lightning CSS visitor that replaces `@composes` with the indexed declarations.
+ * @example
+ * globalComposes({ source: "./global.css" });
+ * @example
+ * transform({
+ *   code: Buffer.from(".button { @composes typography; }"),
+ *   visitor: composeVisitors([
+ *     globalComposes({ source: ["./global.css", "./typography.css"] }),
+ *   ]),
+ * });
+ */
+export default ({ source, onUnresolved = warnUnresolved }: Options) => {
 	// Build class index once at initialization to avoid repeated AST scans
-	const classIndex = buildClassIndex(ast);
+	const classIndex = new Map<string, DeclarationBlock<Declaration>>();
+	for (const entry of isSourceList(source) ? source : [source]) {
+		for (const [name, declarations] of resolveSource(entry).classes) {
+			classIndex.set(name, declarations);
+		}
+	}
 	return {
 		Rule: {
 			style(rule: Rule<Declaration>): Rule<Declaration> | undefined {
@@ -178,6 +200,14 @@ export default ({ source }: Options) => {
 					}
 
 					let mutated = false;
+					let unresolved: Set<string> | undefined;
+					let selector: string | undefined;
+					// Collect composed declarations in `@composes` order so later names win,
+					// then place them all before the rule's own declarations below.
+					// Both arrays are needed — omitting importantDeclarations would
+					// silently drop any `!important` properties in the composed class.
+					const composed: Declaration[] = [];
+					const composedImportant: Declaration[] = [];
 					rule.value.rules = rule.value.rules.filter((child) => {
 						if (isComposesAtRule(child)) {
 							mutated = true;
@@ -185,26 +215,45 @@ export default ({ source }: Options) => {
 							for (const name of names) {
 								// Use prebuilt index for O(1) lookup instead of O(R) scan
 								const declarations = classIndex.get(name);
-								if (declarations && rule.value.declarations) {
-									// Prepend both normal and !important declarations from the source class.
-									// Both arrays must be copied — omitting importantDeclarations would
-									// silently drop any `!important` properties in the composed class.
-									if (declarations.declarations?.length) {
-										rule.value.declarations.declarations = declarations.declarations.concat(
-											rule.value.declarations.declarations ?? [],
-										);
+								if (!declarations) {
+									unresolved ??= new Set();
+									if (!unresolved.has(name)) {
+										unresolved.add(name);
+										const { selectors, loc } = rule.value;
+										onUnresolved({
+											name,
+											loc,
+											// Format lazily: callbacks that ignore the selector skip the cost.
+											get selector() {
+												selector ??= formatSelectors(selectors);
+												return selector;
+											},
+										});
 									}
-									if (declarations.importantDeclarations?.length) {
-										rule.value.declarations.importantDeclarations = declarations.importantDeclarations.concat(
-											rule.value.declarations.importantDeclarations ?? [],
-										);
-									}
+									continue;
+								}
+								if (declarations.declarations?.length) {
+									composed.push(...declarations.declarations);
+								}
+								if (declarations.importantDeclarations?.length) {
+									composedImportant.push(...declarations.importantDeclarations);
 								}
 							}
 							return false;
 						}
 						return true;
 					});
+
+					if (rule.value.declarations) {
+						if (composed.length) {
+							rule.value.declarations.declarations = composed.concat(rule.value.declarations.declarations ?? []);
+						}
+						if (composedImportant.length) {
+							rule.value.declarations.importantDeclarations = composedImportant.concat(
+								rule.value.declarations.importantDeclarations ?? [],
+							);
+						}
+					}
 
 					// Only return the rule when it was actually mutated (i.e. a @composes rule
 					// was found and removed). Returning undefined tells lightningcss to keep the
