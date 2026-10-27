@@ -1,8 +1,12 @@
 import console from "node:console";
 import { type CssSource, type CssSourceInput, resolveCssSource } from "@sardine/lightningcss-plugin-source";
 import { stripNullValues } from "@sardine/lightningcss-plugin-utils";
-import type { CustomAtRules, Declaration, DeclarationBlock, Location2, Rule } from "lightningcss";
+import type { CustomAtRules, Declaration, DeclarationBlock, Location2, Rule, TokenOrValue } from "lightningcss";
 import { formatSelectors } from "./formatSelectors";
+
+const PLUGIN_PREFIX = "[@sardine/lightningcss-plugin-global-composes]:";
+
+type ClassIndex = ReadonlyMap<string, DeclarationBlock<Declaration>>;
 
 /** A composed class name that was not found in any source. */
 export interface UnresolvedClass {
@@ -14,8 +18,9 @@ export interface UnresolvedClass {
 	 */
 	readonly selector: string;
 	/**
-	 * Location of that rule as reported by Lightning CSS: `line` starts at 0 and `column` at 1.
-	 * `source_index` is the file's position in the bundle's source map `sources` (0 is the entry file).
+	 * Location of the `@composes` at-rule as reported by Lightning CSS: `line` starts at 0 and
+	 * `column` at 1. `source_index` is the file's position in the bundle's source map `sources`
+	 * (0 is the entry file). This is a copy, so changing it does not affect the output.
 	 */
 	readonly loc: Location2;
 }
@@ -62,6 +67,7 @@ export const globalComposesCustomAtRules: CustomAtRules = {
  */
 interface CustomAtRuleValue {
 	name: string;
+	loc?: Location2;
 	prelude:
 		| {
 				type: "repeated";
@@ -73,14 +79,35 @@ interface CustomAtRuleValue {
 }
 
 /**
- * Returns true if the given rule is an `@composes` at-rule, whether declared
- * as an unknown at-rule (back-compat) or as a configured custom at-rule.
+ * The parts of an `@composes` at-rule the plugin reads. Unknown at-rules have a
+ * `TokenOrValue[]` prelude; configured custom at-rules have a parsed component.
  */
-function isComposesAtRule(child: Rule<Declaration>): boolean {
-	const isUnknownComposesRule = child.type === "unknown" && child.value.name === "composes";
-	const customValue = child.type === "custom" ? (child.value as unknown as CustomAtRuleValue) : null;
-	const isCustomComposesRule = customValue && customValue.name === "composes";
-	return isUnknownComposesRule || !!isCustomComposesRule;
+interface ComposesAtRule {
+	loc?: Location2;
+	prelude: TokenOrValue[] | CustomAtRuleValue["prelude"];
+}
+
+/**
+ * Returns the `@composes` at-rule in `child`, whether declared as an unknown
+ * at-rule (back-compat) or as a configured custom at-rule, or null for any other rule.
+ * Allocation-free, so it is cheap to call on every nested rule.
+ */
+function asComposesAtRule(child: Rule<Declaration>): ComposesAtRule | null {
+	// child.value is DefaultAtRule (null) in base types for custom at-rules, but at runtime
+	// when customAtRules is configured it has the custom at-rule structure.
+	const value =
+		child.type === "unknown"
+			? child.value
+			: child.type === "custom"
+				? (child.value as unknown as CustomAtRuleValue | null)
+				: null;
+	return value?.name === "composes" ? value : null;
+}
+
+/** True for `ReadonlyMap`-like class indexes, including maps from another realm. */
+function isClassIndex(value: unknown): value is ClassIndex {
+	const map = value as ClassIndex | undefined;
+	return typeof map?.get === "function" && typeof map[Symbol.iterator] === "function";
 }
 
 /**
@@ -95,51 +122,52 @@ function resolveSource(entry: CssSourceInput): CssSource {
 		// createCssSource keeps the Lightning CSS error as its cause; keep it here too so
 		// callers can read its `fileName` and `loc`.
 		const cause = ((error as Error).cause ?? error) as Error;
-		throw Error(`[@sardine/lightningcss-plugin-global-composes]: Failed to load "${entry}": ${cause.message}`, {
-			cause,
-		});
+		throw Error(`${PLUGIN_PREFIX} Failed to load "${entry}": ${cause.message}`, { cause });
 	}
-	if (!(resolved?.classes instanceof Map)) {
+	if (!isClassIndex(resolved?.classes)) {
 		throw Error(
-			'[@sardine/lightningcss-plugin-global-composes]: Invalid source: expected a CSS file path or a handle from createCssSource() with a "classes" index. Handles from @sardine/lightningcss-plugin-source 1.x have no "classes"; upgrade it to ^2.0.0.',
+			`${PLUGIN_PREFIX} Invalid source: expected a CSS file path or a handle from createCssSource() with a "classes" index. Handles from @sardine/lightningcss-plugin-source 1.x have no "classes"; upgrade it to ^2.0.0.`,
 		);
 	}
 	return resolved;
 }
 
-/**
- * Extract class names from @composes at-rule prelude.
- * Handles both unknown at-rules (TokenOrValue[]) and custom at-rules (ParsedComponent).
- */
-function extractClassNames(child: Rule<Declaration>): string[] {
+/** Merge source indexes in order so later sources win. A single source is used as is. */
+function buildClassIndex(sources: readonly CssSource[]): ClassIndex {
+	const [first, ...rest] = sources;
+	if (first && rest.length === 0) {
+		return first.classes;
+	}
+	const classIndex = new Map<string, DeclarationBlock<Declaration>>();
+	for (const { classes } of sources) {
+		for (const [name, declarations] of classes) {
+			classIndex.set(name, declarations);
+		}
+	}
+	return classIndex;
+}
+
+/** Extract class names from an `@composes` prelude. */
+function extractClassNames({ prelude }: ComposesAtRule): string[] {
 	const names: string[] = [];
 
-	if (child.type === "unknown" && child.value.name === "composes") {
+	if (Array.isArray(prelude)) {
 		// Unknown at-rule: prelude is TokenOrValue[]
-		for (const token of child.value.prelude) {
+		for (const token of prelude) {
 			if (token.type === "token" && token.value.type === "ident") {
 				names.push(token.value.value);
 			}
 		}
-	} else if (child.type === "custom") {
-		// Custom at-rule: prelude is ParsedComponent
-		// Note: child.value is DefaultAtRule (null) in base types, but at runtime when
-		// customAtRules is configured, it will have the actual custom at-rule structure
-		const customValue = child.value as unknown as CustomAtRuleValue;
-		if (customValue && customValue.name === "composes") {
-			const prelude = customValue.prelude;
-			if (prelude.type === "repeated") {
-				// For "<custom-ident>+", prelude is { type: "repeated", value: { components: [...] } }
-				for (const component of prelude.value.components) {
-					if (component.type === "custom-ident") {
-						names.push(component.value);
-					}
-				}
-			} else if (prelude.type === "custom-ident") {
-				// For a single custom-ident
-				names.push(prelude.value);
+	} else if (prelude.type === "repeated") {
+		// For "<custom-ident>+", prelude is { type: "repeated", value: { components: [...] } }
+		for (const component of prelude.value.components) {
+			if (component.type === "custom-ident") {
+				names.push(component.value);
 			}
 		}
+	} else if (prelude.type === "custom-ident") {
+		// For a single custom-ident
+		names.push(prelude.value);
 	}
 
 	return names;
@@ -150,7 +178,7 @@ function warnUnresolved({ name, selector, loc }: UnresolvedClass): void {
 	// Positions in files imported by `bundle()` need the file index to be found.
 	const file = loc.source_index === 0 ? "" : ` of bundled file ${loc.source_index}`;
 	console.warn(
-		`[@sardine/lightningcss-plugin-global-composes]: class ${JSON.stringify(name)} not found in source (composed in "${selector}" at line ${loc.line + 1}, column ${loc.column}${file})`,
+		`${PLUGIN_PREFIX} class ${JSON.stringify(name)} not found in source (composed in "${selector}" at line ${loc.line + 1}, column ${loc.column}${file})`,
 	);
 }
 
@@ -178,12 +206,7 @@ function isSourceList(source: Options["source"]): source is readonly CssSourceIn
  */
 export default ({ source, onUnresolved = warnUnresolved }: Options) => {
 	// Build class index once at initialization to avoid repeated AST scans
-	const classIndex = new Map<string, DeclarationBlock<Declaration>>();
-	for (const entry of isSourceList(source) ? source : [source]) {
-		for (const [name, declarations] of resolveSource(entry).classes) {
-			classIndex.set(name, declarations);
-		}
-	}
+	const classIndex = buildClassIndex((isSourceList(source) ? source : [source]).map(resolveSource));
 	return {
 		Rule: {
 			style(rule: Rule<Declaration>): Rule<Declaration> | undefined {
@@ -191,7 +214,7 @@ export default ({ source, onUnresolved = warnUnresolved }: Options) => {
 					// Fast path: if there is no @composes child at all, avoid allocating a new
 					// array via filter. This is common in lightningcss >=1.28 where rules
 					// often have rule.value.rules = [].
-					const hasComposesChild = rule.value.rules.some((child) => isComposesAtRule(child));
+					const hasComposesChild = rule.value.rules.some((child) => asComposesAtRule(child) !== null);
 
 					if (!hasComposesChild) {
 						// No @composes children to process; keep the rule as-is and avoid
@@ -199,7 +222,6 @@ export default ({ source, onUnresolved = warnUnresolved }: Options) => {
 						return undefined;
 					}
 
-					let mutated = false;
 					let unresolved: Set<string> | undefined;
 					let selector: string | undefined;
 					// Collect composed declarations in `@composes` order so later names win,
@@ -209,20 +231,20 @@ export default ({ source, onUnresolved = warnUnresolved }: Options) => {
 					const composed: Declaration[] = [];
 					const composedImportant: Declaration[] = [];
 					rule.value.rules = rule.value.rules.filter((child) => {
-						if (isComposesAtRule(child)) {
-							mutated = true;
-							const names = extractClassNames(child);
-							for (const name of names) {
+						const composes = asComposesAtRule(child);
+						if (composes) {
+							for (const name of extractClassNames(composes)) {
 								// Use prebuilt index for O(1) lookup instead of O(R) scan
 								const declarations = classIndex.get(name);
 								if (!declarations) {
 									unresolved ??= new Set();
 									if (!unresolved.has(name)) {
 										unresolved.add(name);
-										const { selectors, loc } = rule.value;
+										const { selectors } = rule.value;
 										onUnresolved({
 											name,
-											loc,
+											// Copy so a callback that edits it cannot change the output's source map.
+											loc: { ...(composes.loc ?? rule.value.loc) },
 											// Format lazily: callbacks that ignore the selector skip the cost.
 											get selector() {
 												selector ??= formatSelectors(selectors);
@@ -255,19 +277,15 @@ export default ({ source, onUnresolved = warnUnresolved }: Options) => {
 						}
 					}
 
-					// Only return the rule when it was actually mutated (i.e. a @composes rule
-					// was found and removed). Returning undefined tells lightningcss to keep the
-					// rule as-is, avoiding the null-field deserialisation error introduced in
-					// lightningcss >=1.28 where rule.value.rules is [] (truthy) even for rules
-					// with no nested children, causing every rule to be returned and triggering:
+					// Reaching this point means at least one @composes rule was removed, so the
+					// rule always changed. Untouched rules return undefined above, which tells
+					// lightningcss to keep them as-is, avoiding the null-field deserialisation
+					// error introduced in lightningcss >=1.28 where rule.value.rules is [] (truthy)
+					// even for rules with no nested children, causing every rule to be returned and triggering:
 					//   "failed to deserialize; expected an object-like struct named Specifier, found ()"
-					if (mutated) {
-						// Sanitize the mutated rule to strip null-valued keys so that
-						// lightningcss can safely deserialize the structure (see
-						// lightningcss >=1.28 null-field handling).
-						const sanitizedRule = stripNullValues(rule) as Rule<Declaration>;
-						return sanitizedRule;
-					}
+					// Sanitize the mutated rule to strip null-valued keys so that lightningcss can
+					// safely deserialize the structure (see lightningcss >=1.28 null-field handling).
+					return stripNullValues(rule) as Rule<Declaration>;
 				}
 
 				return undefined;

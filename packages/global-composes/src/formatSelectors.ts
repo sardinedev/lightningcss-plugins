@@ -153,9 +153,6 @@ function printPseudoClass(component: PseudoClassComponent): string {
 			return `:dir(${component.direction})`;
 		case "state":
 			return `:state(${printIdentifier(component.state)})`;
-		case "active-view-transition-type":
-			// Its argument list is stored in a `type` field, which printKeyword would skip.
-			return unsupported();
 		default:
 			return printKeyword(":", component);
 	}

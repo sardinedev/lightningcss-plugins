@@ -151,6 +151,28 @@ describe("shared source handles", () => {
 		expect(code.toString()).toBe(".foo{color:red;color:red!important}");
 	});
 
+	it("should accept handles whose classes index is any ReadonlyMap", () => {
+		const classes = new Map(createCssSource(mocks.compose).classes);
+		// A ReadonlyMap that is not a Map instance, such as one from another realm or a lazy wrapper.
+		const readonlyMap = {
+			get: vi.fn((name: string) => classes.get(name)),
+			[Symbol.iterator]: () => classes[Symbol.iterator](),
+		};
+		const handle = { classes: readonlyMap } as never;
+
+		const single = runTransform(`.foo { @composes bar; }`, { visitor: globalComposes({ source: handle }) });
+		expect(single.code.toString()).toBe(".foo{color:red}");
+		// A single source is looked up directly instead of being copied.
+		expect(readonlyMap.get).toHaveBeenCalledWith("bar");
+
+		readonlyMap.get.mockClear();
+		const merged = runTransform(`.foo { @composes bar overlay; }`, {
+			visitor: globalComposes({ source: [handle, mocks.overlay] }),
+		});
+		expect(merged.code.toString()).toBe(".foo{background-color:#00f;font-weight:700}");
+		expect(readonlyMap.get).not.toHaveBeenCalled();
+	});
+
 	it("should merge paths and handles in source order", () => {
 		const compose = createCssSource(mocks.compose);
 		const handleFirst = runTransform(`.foo { @composes bar; }`, {
@@ -249,7 +271,7 @@ describe("unresolved classes", () => {
 
 		expect(code.toString()).toBe(".button--small{color:#00f}");
 		expect(console.warn).toHaveBeenCalledExactlyOnceWith(
-			'[@sardine/lightningcss-plugin-global-composes]: class "label-sm-bold" not found in source (composed in ".button--small" at line 1, column 1)',
+			'[@sardine/lightningcss-plugin-global-composes]: class "label-sm-bold" not found in source (composed in ".button--small" at line 1, column 18)',
 		);
 		if (configured) {
 			expect(warnings).toHaveLength(0);
@@ -262,7 +284,7 @@ describe("unresolved classes", () => {
 		});
 
 		expect(console.warn).toHaveBeenCalledExactlyOnceWith(
-			expect.stringContaining('(composed in ".bar" at line 3, column 3)'),
+			expect.stringContaining('(composed in ".bar" at line 4, column 5)'),
 		);
 	});
 
@@ -310,7 +332,7 @@ describe("unresolved classes", () => {
 		expect(onUnresolved).toHaveBeenCalledExactlyOnceWith({
 			name: "missing",
 			selector: ".foo, .bar:hover",
-			loc: { source_index: 0, line: 1, column: 1 },
+			loc: { source_index: 0, line: 1, column: 20 },
 		});
 	});
 
@@ -348,7 +370,9 @@ describe("unresolved classes", () => {
 	it.each([
 		["a:is(.b)", "a:is(.b)"],
 		[":nth-child(1):hover", ":nth-child(1):hover"],
-	])("should keep %s as parsed instead of Lightning CSS's simplified %s", (input, printed) => {
+		// Printed by the Lightning CSS fallback, which simplifies the selector.
+		[":-webkit-full-screen:is(.b)", ":-webkit-full-screen.b"],
+	])("should report %s as %s", (input, printed) => {
 		const onUnresolved = vi.fn();
 		runTransform(`${input} { @composes missing; }`, {
 			visitor: globalComposes({ source: mocks.compose, onUnresolved }),
@@ -370,9 +394,9 @@ describe("unresolved classes", () => {
 
 		expect(console.warn).toHaveBeenCalledTimes(2);
 		expect(console.warn).toHaveBeenCalledWith(
-			expect.stringContaining('(composed in ".button" at line 2, column 1 of bundled file 1)'),
+			expect.stringContaining('(composed in ".button" at line 2, column 11 of bundled file 1)'),
 		);
-		expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('(composed in ".entry" at line 2, column 1)'));
+		expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('(composed in ".entry" at line 2, column 10)'));
 	});
 
 	it("should print namespace prefixes", () => {
@@ -390,6 +414,34 @@ describe("unresolved classes", () => {
 		});
 
 		expect(console.warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('(composed in ".md\\:flex" at'));
+	});
+
+	it.each([false, true])("should report the line of each @composes with customAtRules=%s", (configured) => {
+		const onUnresolved = vi.fn();
+		runTransform(`.foo {\n  color: red;\n  @composes missing;\n\n    @composes other;\n}`, {
+			...(configured ? { customAtRules: globalComposesCustomAtRules } : {}),
+			visitor: globalComposes({ source: mocks.compose, onUnresolved }),
+		});
+
+		expect(onUnresolved.mock.calls.map(([{ name, loc }]) => [name, loc])).toEqual([
+			["missing", { source_index: 0, line: 2, column: 3 }],
+			["other", { source_index: 0, line: 4, column: 5 }],
+		]);
+	});
+
+	it("should pass each report its own copy of the location", () => {
+		const lines: number[] = [];
+		runTransform(`.foo { @composes missing other; }`, {
+			visitor: globalComposes({
+				source: mocks.compose,
+				onUnresolved: ({ loc }) => {
+					lines.push(loc.line);
+					(loc as { line: number }).line += 100;
+				},
+			}),
+		});
+
+		expect(lines).toEqual([0, 0]);
 	});
 
 	it("should fail the transform when onUnresolved throws", () => {
@@ -423,7 +475,7 @@ describe("unresolved classes", () => {
 
 		expect(code.toString()).toBe(".foo{color:red}.bar{color:red}");
 		expect(console.warn).toHaveBeenCalledExactlyOnceWith(
-			expect.stringContaining('(composed in ".bar" at line 2, column 1)'),
+			expect.stringContaining('(composed in ".bar" at line 2, column 8)'),
 		);
 	});
 
@@ -434,7 +486,7 @@ describe("unresolved classes", () => {
 
 		expect(code.toString()).toBe(".parent{&:hover{color:red}}");
 		expect(console.warn).toHaveBeenCalledExactlyOnceWith(
-			expect.stringContaining('(composed in "&:hover" at line 2, column 3)'),
+			expect.stringContaining('(composed in "&:hover" at line 2, column 13)'),
 		);
 	});
 
@@ -470,7 +522,7 @@ describe("edge cases and regressions", () => {
 
 		expect(code.toString()).toBe(".foo{color:#00f}");
 		expect(warn).toHaveBeenCalledExactlyOnceWith(
-			'[@sardine/lightningcss-plugin-global-composes]: class "nonexistent" not found in source (composed in ".foo" at line 1, column 1)',
+			'[@sardine/lightningcss-plugin-global-composes]: class "nonexistent" not found in source (composed in ".foo" at line 1, column 8)',
 		);
 	});
 
