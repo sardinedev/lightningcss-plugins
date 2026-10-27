@@ -38,6 +38,12 @@
 		"types:check": "tsc -p tsconfig.json",
 		"types:export": "tsc -p tsconfig.export.json"
 	},
+	"dependencies": {
+		"@sardine/lightningcss-plugin-source": "^1.0.0"
+	},
+	"peerDependencies": {
+		"lightningcss": ">=1.32.0"
+	},
 	"devDependencies": {
 		"@sardine/lightningcss-plugin-utils": "*",
 		"@biomejs/biome": "2.5.0",

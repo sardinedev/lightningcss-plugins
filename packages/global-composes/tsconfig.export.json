@@ -4,6 +4,7 @@
 	"include": ["./src"],
 	"exclude": ["./src/**/*.test.ts", "./src/**/*.bench.ts"],
 	"compilerOptions": {
+		"types": ["node"],
 		"rootDir": "./src",
 		"noEmit": false,
 		"declaration": true,

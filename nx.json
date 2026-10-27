@@ -7,17 +7,23 @@
 			"cache": true
 		},
 		"test": {
+			"dependsOn": ["^build"],
 			"outputs": ["{projectRoot}/coverage"],
 			"cache": true
 		},
 		"bench": {
+			"dependsOn": ["^build"],
 			"cache": true
 		},
 		"lint": {
 			"cache": true
 		},
 		"types:check": {
+			"dependsOn": ["^types:export"],
 			"cache": true
+		},
+		"types:export": {
+			"dependsOn": ["build", "^types:export"]
 		},
 		"@nx/vitest:test": {
 			"cache": true,

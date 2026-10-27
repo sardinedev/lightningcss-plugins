@@ -3,7 +3,7 @@
 Parse one CSS source file once and share its indexed values across Lightning CSS plugins. This avoids repeated filesystem reads and parsing when several plugins use the same tokens file.
 
 - **One parse.** `createCssSource()` reads and bundles the source immediately.
-- **Shared indexes.** Custom properties and `@custom-media` definitions are available from one handle.
+- **Shared indexes.** Custom properties, `@custom-media` definitions and global classes are available from one handle.
 - **Explicit lifetime.** The caller owns the handle, so there is no process-global cache or hidden invalidation behavior.
 
 ```ts
@@ -53,11 +53,12 @@ const { code } = transform({
 
 Reads and parses `filename`, then returns a `CssSource` containing read-only indexes:
 
+- `classes`: class names from top-level style rules mapped to their parsed declarations.
 - `customMedia`: custom media names mapped to their parsed conditions.
 - `customProperties`: custom property names mapped to their parsed token values.
 - `filename`: the source path used to create the handle.
 
-Custom properties are indexed in source order. When a property appears more than once, the last declaration wins.
+Custom properties and classes are indexed in source order. When a property or class appears more than once, the last definition wins.
 
 ### `resolveCssSource(source)`
 
