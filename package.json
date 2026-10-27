@@ -17,11 +17,11 @@
 	"devDependencies": {
 		"@changesets/changelog-github": "1.0.1",
 		"@changesets/cli": "2.31.1",
-		"@nx/vite": "23.3.0",
-		"@nx/vitest": "23.3.0",
-		"@nx/web": "23.3.0",
+		"@nx/vite": "23.3.1",
+		"@nx/vitest": "23.3.1",
+		"@nx/web": "23.3.1",
 		"lefthook": "2.2.2",
-		"nx": "23.3.0",
+		"nx": "23.3.1",
 		"vite": "8.3.5",
 		"vitest": "4.1.12"
 	},
