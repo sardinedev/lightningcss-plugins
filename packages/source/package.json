@@ -38,7 +38,7 @@
 		"types:export": "tsc -p tsconfig.export.json"
 	},
 	"peerDependencies": {
-		"lightningcss": ">=1.32.0"
+		"lightningcss": ">=1.33.0"
 	},
 	"devDependencies": {
 		"@sardine/lightningcss-plugin-utils": "*",
