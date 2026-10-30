@@ -1,6 +1,6 @@
 {
 	"name": "@sardine/lightningcss-plugin-global-composes",
-	"version": "2.0.0",
+	"version": "3.0.0",
 	"description": "A LightningCSS plugin to compose selectors",
 	"keywords": [
 		"lightningcss-plugin"
@@ -39,7 +39,7 @@
 		"types:export": "tsc -p tsconfig.export.json"
 	},
 	"dependencies": {
-		"@sardine/lightningcss-plugin-source": "^2.0.0"
+		"@sardine/lightningcss-plugin-source": "^3.0.0"
 	},
 	"peerDependencies": {
 		"lightningcss": ">=1.33.0"
