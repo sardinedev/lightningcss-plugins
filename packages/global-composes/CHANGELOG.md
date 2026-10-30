@@ -1,5 +1,16 @@
 # @sardine/lightningcss-plugin-global-composes
 
+## 3.0.0
+
+### Major Changes
+
+- 9d2cda8: Raise the minimum supported `lightningcss` peer dependency from `1.32.0` to `1.33.0`.
+
+### Patch Changes
+
+- Updated dependencies [9d2cda8]
+  - @sardine/lightningcss-plugin-source@3.0.0
+
 ## 2.0.0
 
 ### Major Changes
