@@ -5,6 +5,7 @@
 		"rules": {
 			"suspicious": {
 				"noUnknownAtRules": {
+					"level": "error",
 					"options": {
 						"ignore": ["custom-media"]
 					}
