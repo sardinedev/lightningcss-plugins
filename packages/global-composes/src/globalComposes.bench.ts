@@ -1,7 +1,7 @@
 import console from "node:console";
 import path from "node:path";
 import { composeVisitors, transform } from "lightningcss";
-import { bench, describe, vi } from "vitest";
+import { describe, test, vi } from "vitest";
 import globalComposes, { globalComposesCustomAtRules } from "./globalComposes";
 
 describe("globalComposes performance", () => {
@@ -20,177 +20,195 @@ describe("globalComposes performance", () => {
 	const manyResolvedRules = manyRules("bar");
 	const manyUnresolvedRules = manyRules("missing");
 
-	bench("2000 selectors composing a resolved class", () => {
-		transform({
-			filename: "test.css",
-			minify: true,
-			code: manyResolvedRules,
-			customAtRules: globalComposesCustomAtRules,
-			visitor: manyRulesVisitor,
-		});
+	test("2000 selectors composing a resolved class", async ({ bench }) => {
+		await bench("2000 selectors composing a resolved class", () => {
+			transform({
+				filename: "test.css",
+				minify: true,
+				code: manyResolvedRules,
+				customAtRules: globalComposesCustomAtRules,
+				visitor: manyRulesVisitor,
+			});
+		}).run();
 	});
 
-	bench("2000 selectors composing an unresolved class", () => {
-		transform({
-			filename: "test.css",
-			minify: true,
-			code: manyUnresolvedRules,
-			customAtRules: globalComposesCustomAtRules,
-			visitor: manyRulesVisitor,
-		});
+	test("2000 selectors composing an unresolved class", async ({ bench }) => {
+		await bench("2000 selectors composing an unresolved class", () => {
+			transform({
+				filename: "test.css",
+				minify: true,
+				code: manyUnresolvedRules,
+				customAtRules: globalComposesCustomAtRules,
+				visitor: manyRulesVisitor,
+			});
+		}).run();
 	});
 
-	bench("compose classes from multiple source files", () => {
-		transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(".foo { @composes small overlay; }"),
-			customAtRules: globalComposesCustomAtRules,
-			visitor: globalComposes({
-				source: [mockPath, path.join(__dirname, "./mocks/compose-overlay.css")],
-			}),
-		});
+	test("compose classes from multiple source files", async ({ bench }) => {
+		await bench("compose classes from multiple source files", () => {
+			transform({
+				filename: "test.css",
+				minify: true,
+				code: new TextEncoder().encode(".foo { @composes small overlay; }"),
+				customAtRules: globalComposesCustomAtRules,
+				visitor: globalComposes({
+					source: [mockPath, path.join(__dirname, "./mocks/compose-overlay.css")],
+				}),
+			});
+		}).run();
 	});
 
-	bench("single @composes from small file", () => {
-		const source = `
-			.foo {
-				@composes bar;
-			}
-		`;
+	test("single @composes from small file", async ({ bench }) => {
+		await bench("single @composes from small file", () => {
+			const source = `
+				.foo {
+					@composes bar;
+				}
+			`;
 
-		transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			customAtRules: {
-				...globalComposesCustomAtRules,
-			},
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
-		});
+			transform({
+				filename: "test.css",
+				minify: true,
+				code: new TextEncoder().encode(source),
+				customAtRules: {
+					...globalComposesCustomAtRules,
+				},
+				visitor: composeVisitors([globalComposes({ source: mockPath })]),
+			});
+		}).run();
 	});
 
-	bench("multiple @composes from small file", () => {
-		const source = `
-			.foo {
-				@composes bar;
-				@composes small;
-			}
-		`;
+	test("multiple @composes from small file", async ({ bench }) => {
+		await bench("multiple @composes from small file", () => {
+			const source = `
+				.foo {
+					@composes bar;
+					@composes small;
+				}
+			`;
 
-		transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			customAtRules: {
-				...globalComposesCustomAtRules,
-			},
-			visitor: composeVisitors([globalComposes({ source: mockPath })]),
-		});
+			transform({
+				filename: "test.css",
+				minify: true,
+				code: new TextEncoder().encode(source),
+				customAtRules: {
+					...globalComposesCustomAtRules,
+				},
+				visitor: composeVisitors([globalComposes({ source: mockPath })]),
+			});
+		}).run();
 	});
 
-	bench("single @composes from large file (50 classes)", () => {
-		const source = `
-			.component {
-				@composes class1;
-			}
-		`;
+	test("single @composes from large file (50 classes)", async ({ bench }) => {
+		await bench("single @composes from large file (50 classes)", () => {
+			const source = `
+				.component {
+					@composes class1;
+				}
+			`;
 
-		transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			customAtRules: {
-				...globalComposesCustomAtRules,
-			},
-			visitor: composeVisitors([globalComposes({ source: stressPath })]),
-		});
+			transform({
+				filename: "test.css",
+				minify: true,
+				code: new TextEncoder().encode(source),
+				customAtRules: {
+					...globalComposesCustomAtRules,
+				},
+				visitor: composeVisitors([globalComposes({ source: stressPath })]),
+			});
+		}).run();
 	});
 
-	bench("10 selectors composing from large file", () => {
-		const source = `
-			.component-1 { @composes class1; }
-			.component-2 { @composes class2; }
-			.component-3 { @composes class3; }
-			.component-4 { @composes class4; }
-			.component-5 { @composes class5; }
-			.component-6 { @composes class6; }
-			.component-7 { @composes class7; }
-			.component-8 { @composes class8; }
-			.component-9 { @composes class9; }
-			.component-10 { @composes class10; }
-		`;
+	test("10 selectors composing from large file", async ({ bench }) => {
+		await bench("10 selectors composing from large file", () => {
+			const source = `
+				.component-1 { @composes class1; }
+				.component-2 { @composes class2; }
+				.component-3 { @composes class3; }
+				.component-4 { @composes class4; }
+				.component-5 { @composes class5; }
+				.component-6 { @composes class6; }
+				.component-7 { @composes class7; }
+				.component-8 { @composes class8; }
+				.component-9 { @composes class9; }
+				.component-10 { @composes class10; }
+			`;
 
-		transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			customAtRules: {
-				...globalComposesCustomAtRules,
-			},
-			visitor: composeVisitors([globalComposes({ source: stressPath })]),
-		});
+			transform({
+				filename: "test.css",
+				minify: true,
+				code: new TextEncoder().encode(source),
+				customAtRules: {
+					...globalComposesCustomAtRules,
+				},
+				visitor: composeVisitors([globalComposes({ source: stressPath })]),
+			});
+		}).run();
 	});
 
-	bench("many @composes in single selector", () => {
-		const source = `
-			.component {
-				@composes class1;
-				@composes class2;
-				@composes class3;
-				@composes class4;
-				@composes class5;
-				@composes class6;
-				@composes class7;
-				@composes class8;
-				@composes class9;
-				@composes class10;
-			}
-		`;
+	test("many @composes in single selector", async ({ bench }) => {
+		await bench("many @composes in single selector", () => {
+			const source = `
+				.component {
+					@composes class1;
+					@composes class2;
+					@composes class3;
+					@composes class4;
+					@composes class5;
+					@composes class6;
+					@composes class7;
+					@composes class8;
+					@composes class9;
+					@composes class10;
+				}
+			`;
 
-		transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			customAtRules: {
-				...globalComposesCustomAtRules,
-			},
-			visitor: composeVisitors([globalComposes({ source: stressPath })]),
-		});
+			transform({
+				filename: "test.css",
+				minify: true,
+				code: new TextEncoder().encode(source),
+				customAtRules: {
+					...globalComposesCustomAtRules,
+				},
+				visitor: composeVisitors([globalComposes({ source: stressPath })]),
+			});
+		}).run();
 	});
 
-	bench("complex: 20 selectors with multiple @composes each", () => {
-		const source = `
-			.comp-1 { @composes class1; @composes class2; }
-			.comp-2 { @composes class3; @composes class4; }
-			.comp-3 { @composes class5; @composes class6; }
-			.comp-4 { @composes class7; @composes class8; }
-			.comp-5 { @composes class9; @composes class10; }
-			.comp-6 { @composes class11; @composes class12; }
-			.comp-7 { @composes class13; @composes class14; }
-			.comp-8 { @composes class15; @composes class16; }
-			.comp-9 { @composes class17; @composes class18; }
-			.comp-10 { @composes class19; @composes class20; }
-			.comp-11 { @composes class21; @composes class22; }
-			.comp-12 { @composes class23; @composes class24; }
-			.comp-13 { @composes class25; @composes class26; }
-			.comp-14 { @composes class27; @composes class28; }
-			.comp-15 { @composes class29; @composes class30; }
-			.comp-16 { @composes class31; @composes class32; }
-			.comp-17 { @composes class33; @composes class34; }
-			.comp-18 { @composes class35; @composes class36; }
-			.comp-19 { @composes class37; @composes class38; }
-			.comp-20 { @composes class39; @composes class40; }
-		`;
+	test("complex: 20 selectors with multiple @composes each", async ({ bench }) => {
+		await bench("complex: 20 selectors with multiple @composes each", () => {
+			const source = `
+				.comp-1 { @composes class1; @composes class2; }
+				.comp-2 { @composes class3; @composes class4; }
+				.comp-3 { @composes class5; @composes class6; }
+				.comp-4 { @composes class7; @composes class8; }
+				.comp-5 { @composes class9; @composes class10; }
+				.comp-6 { @composes class11; @composes class12; }
+				.comp-7 { @composes class13; @composes class14; }
+				.comp-8 { @composes class15; @composes class16; }
+				.comp-9 { @composes class17; @composes class18; }
+				.comp-10 { @composes class19; @composes class20; }
+				.comp-11 { @composes class21; @composes class22; }
+				.comp-12 { @composes class23; @composes class24; }
+				.comp-13 { @composes class25; @composes class26; }
+				.comp-14 { @composes class27; @composes class28; }
+				.comp-15 { @composes class29; @composes class30; }
+				.comp-16 { @composes class31; @composes class32; }
+				.comp-17 { @composes class33; @composes class34; }
+				.comp-18 { @composes class35; @composes class36; }
+				.comp-19 { @composes class37; @composes class38; }
+				.comp-20 { @composes class39; @composes class40; }
+			`;
 
-		transform({
-			filename: "test.css",
-			minify: true,
-			code: new TextEncoder().encode(source),
-			customAtRules: {
-				...globalComposesCustomAtRules,
-			},
-			visitor: composeVisitors([globalComposes({ source: stressPath })]),
-		});
+			transform({
+				filename: "test.css",
+				minify: true,
+				code: new TextEncoder().encode(source),
+				customAtRules: {
+					...globalComposesCustomAtRules,
+				},
+				visitor: composeVisitors([globalComposes({ source: stressPath })]),
+			});
+		}).run();
 	});
 });
