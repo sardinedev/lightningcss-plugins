@@ -17,6 +17,7 @@
 	"devDependencies": {
 		"@changesets/changelog-github": "1.0.1",
 		"@changesets/cli": "3.0.3",
+		"@codspeed/vitest-plugin": "6.1.1",
 		"@nx/vite": "24.0.4",
 		"@nx/vitest": "24.0.4",
 		"@nx/web": "24.0.4",
