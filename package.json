@@ -24,7 +24,7 @@
 		"lefthook": "2.2.2",
 		"nx": "24.0.6",
 		"vite": "8.3.8",
-		"vitest": "5.1.0"
+		"vitest": "5.1.1"
 	},
 	"packageManager": "npm@12.2.3",
 	"dependencies": {}
